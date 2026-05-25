@@ -52,8 +52,8 @@ if __name__ == "__main__":
         '../data/raw/product_category_name_translation.csv': 'product_category_name_translation'
     }
 
-for csv_path, table_name in data_files.items():
-    if os.path.exists(csv_path):
-        ingest_csv_to_mysql(csv_path= csv_path, table_name= table_name)
-    else:
-        print(f"File {csv_path} not found. Skipping.\n")
+    for csv_path, table_name in data_files.items():
+        if os.path.exists(csv_path):
+            ingest_csv_to_mysql(csv_path= csv_path, table_name= table_name)
+        else:
+            print(f"File {csv_path} not found. Skipping.\n")
