@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 import pandas as pd
 from sqlalchemy import create_engine
+from sqlalchemy.engine import URL
 
 # Loading Environment Variables:
 load_dotenv()
@@ -11,7 +12,13 @@ DB_HOST = os.getenv("DB_HOST")
 DB_NAME = os.getenv("DB_NAME")
 
 # SQLAlchemy Engine using pymysql:
-engine_url = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
+engine_url = URL.create(
+    driver= 'mysql+pymysql',
+    host= DB_HOST,
+    password= DB_PASSWORD,
+    username= DB_USER,
+    database= DB_NAME
+)
 engine = create_engine(engine_url)
 
 # From CSV files to MySQL:
