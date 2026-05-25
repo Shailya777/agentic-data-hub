@@ -13,7 +13,7 @@ DB_NAME = os.getenv("DB_NAME")
 
 # SQLAlchemy Engine using pymysql:
 engine_url = URL.create(
-    driver= 'mysql+pymysql',
+    drivername= 'mysql+pymysql',
     host= DB_HOST,
     password= DB_PASSWORD,
     username= DB_USER,
@@ -38,3 +38,22 @@ def ingest_csv_to_mysql(csv_path: str, table_name: str):
 
     except Exception as e:
         print(f"Error ingesting {csv_path} into {table_name}: {e}")
+
+if __name__ == "__main__":
+
+    # Defining Mapping of CSV files to MySQL Table Names:
+    data_files= {
+        '../data/raw/olist_customers_dataset.csv': 'customers',
+        '../data/raw/olist_orders_dataset.csv': 'orders',
+        '../data/raw/olist_order_items_dataset.csv': 'order_items',
+        '../data/raw/olist_products_dataset.csv': 'products',
+        '../data/raw/olist_order_payments_dataset.csv': 'order_payments',
+        '../data/raw/olist_sellers_dataset.csv': 'sellers',
+        '../data/raw/product_category_name_translation.csv': 'product_category_name_translation'
+    }
+
+for csv_path, table_name in data_files.items():
+    if os.path.exists(csv_path):
+        ingest_csv_to_mysql(csv_path= csv_path, table_name= table_name)
+    else:
+        print(f"File {csv_path} not found. Skipping.\n")
