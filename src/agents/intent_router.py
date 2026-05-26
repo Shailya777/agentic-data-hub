@@ -65,8 +65,22 @@ if __name__ == '__main__':
         "What was our total revenue for the top 5 product categories last quarter?",
         "Why are customers giving 1-star reviews in São Paulo?",
         "What was our revenue in Q1, and why were people complaining about shipping during that time?",
-        "Can you forecast our expected sales for the next 30 days?"
-
+        "Can you forecast our expected sales for the next 30 days?",
+        "What were the top 10 cities by total revenue in the last financial year, and how much did each contribute percentage-wise to total sales?",
+        "Summarize the most frequent customer complaints about delivery experience from recent reviews.",
+        "Predict next month’s demand for gaming laptops using the last 24 months of sales data.",
+        "Which products have the highest refund rates, and what reasons are customers mentioning in reviews for refunds?",
+        "Identify stores whose sales behavior is anomalous compared to their historical seasonal patterns.",
+        "What are customers saying about the new mobile app update after version 5.2 release?",
+        "Calculate monthly repeat purchase rate and average basket size for users acquired through Facebook campaigns.",
+        "Which customers are most likely to churn within the next 30 days?",
+        "Why are enterprise customers dissatisfied with onboarding support?",
+        "Find product categories where sales are consistently declining, forecast next quarter performance, and summarize customer feedback related to those categories.",
+        "Show the daily active users trend for the past 6 months segmented by platform.",
+        "Which warehouses are likely to experience stock shortages next month based on current inventory movement?",
+        "Compare average order value, return percentage, and customer lifetime value across loyalty tiers.",
+        "Read support tickets from the last year and identify newly emerging technical issues that were previously uncommon.",
+        "Detect customers whose purchasing behavior significantly deviates from their normal buying patterns and summarize any related support complaints."
     ]
 
     for query in test_queries:
