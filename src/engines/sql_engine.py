@@ -42,8 +42,11 @@ Explicit Relationships:
 - products.product_category_name = product_category_name_translation.product_category_name
 
 Business Rules & Definitions:
-- REVENUE: Total revenue must ONLY be calculated using order_items.price where the associated orders.order_status = 'delivered'. Do not include freight_value in revenue unless explicitly asked.
-- TRANSLATIONS: Always use product_category_name_translation.product_category_name_english when grouping or filtering by product categories, as the base products table is in Portuguese.
+1. REVENUE: Total revenue must ONLY be calculated using SUM(order_items.price) where orders.order_status = 'delivered'. 
+2. TOTAL ORDER VALUE: This is different from Revenue. Total Order Value includes the item price PLUS the freight_value.
+3. TRANSLATIONS: Always use product_category_name_translation.product_category_name_english for product categories. The base products table is in Portuguese.
+4. DELIVERY TIME: Calculated as the difference in days between order_purchase_timestamp and order_delivered_customer_date.
+5. ACTIVE SELLERS: A seller is only considered "active" if they have an associated order in the order_items table linked to a 'delivered' order.
 """
 
 class SQLResponse(BaseModel):
