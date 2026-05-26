@@ -40,6 +40,10 @@ Explicit Relationships:
 - order_items.seller_id = sellers.seller_id
 - order_payments.order_id = orders.order_id
 - products.product_category_name = product_category_name_translation.product_category_name
+
+Business Rules & Definitions:
+- REVENUE: Total revenue must ONLY be calculated using order_items.price where the associated orders.order_status = 'delivered'. Do not include freight_value in revenue unless explicitly asked.
+- TRANSLATIONS: Always use product_category_name_translation.product_category_name_english when grouping or filtering by product categories, as the base products table is in Portuguese.
 """
 
 class SQLResponse(BaseModel):
@@ -77,7 +81,7 @@ def generate_sql_and_metadata(user_query: str, error_message: str = None, previo
         prompt += f"\n\nYour previous query:\n{previous_sql}\n\nFailed with this MySQL error:\n{error_message}\n\nPlease fix the SQL query and provide updated charting metadata."
 
     response= openai.chat.completions.parse(
-        model= 'gpt-5',
+        model= 'gpt-4o',
         messages= [
             {'role': 'system', 'content': f"You are a Senior Data Engineer. You strictly write highly optimized MySQL queries and determine the best way to visualize the results.\n\n{SCHEMA_CONTEXT}"},
             {'role': 'user', 'content': prompt}
