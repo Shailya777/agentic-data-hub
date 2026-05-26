@@ -41,3 +41,23 @@ Explicit Relationships:
 - order_payments.order_id = orders.order_id
 - products.product_category_name = product_category_name_translation.product_category_name
 """
+
+class SQLResponse(BaseModel):
+    """
+    The structured output schema forcing the LLM to provide SQL and Charting Metadata for possible Visualization Artifect.
+    """
+    sql_query: str = Field(
+        description="The raw, highly optimized MySQL query to execute.",
+    )
+    needs_chart: bool = Field(
+        description= "True if the result represents a time series, comparison, or categorical aggregation that benefits from a chart."
+    )
+    chart_type: str = Field(
+        description= "Must be 'bar', 'line', 'scatter', or 'none'."
+    )
+    x_axis: str = Field(
+        description= "The exact column name from the SQL SELECT statement to use for the X-axis, or 'none'."
+    )
+    y_axis: str = Field(
+        description= "The exact column name from the SQL SELECT statement to use for the Y-axis, or 'none'."
+    )
