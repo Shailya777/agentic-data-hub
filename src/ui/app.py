@@ -51,3 +51,30 @@ if run_button and user_query:
                 st.subheader('Results')
                 st.dataframe(data= df,
                              use_container_width= True)
+
+            with col2:
+                st.subheader('Visualization')
+
+                # Deciding Chart Type based on Metadata:
+                if metadata.needs_chart and metadata.chart_type is not None:
+                    try:
+                        if metadata.chart_type == 'bar':
+                            st.bar_chart(data= df, x= metadata.x_axis, y= metadata.y_axis)
+
+                        elif metadata.chart_type == 'line':
+                            st.line_chart(data= df, x= metadata.x_axis, y= metadata.y_axis)
+
+                        elif metadata.chart_type == 'scatter':
+                            st.scatter_chart(data= df, x= metadata.x_axis, y= metadata.y_axis)
+
+                        else:
+                            st.warning(f'Requested chart type {metadata.chart_type} not supported')
+
+                    except Exception as e:
+                        st.error(f'Failed to render chart. Please check axis mapping. Error: {e}')
+
+                else:
+                    st.info('This Data does not require chart (e.g., single metric return).')
+
+        else:
+            st.error('The engine failed to return data. Check the terminal logs for database or self-correction errors.')
