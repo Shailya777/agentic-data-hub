@@ -13,3 +13,5 @@ python-dotenv==1.0.1
 # AI & LLM Framework
 openai==2.24.0
 pydantic==2.6.4
+chromadb==1.5.9
+tiktoken==0.13.0
