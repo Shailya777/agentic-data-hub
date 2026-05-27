@@ -44,3 +44,10 @@ if run_button and user_query:
             with st.expander('🔍 View AI-Generated SQL', expanded= False):
                 st.code(metadata.sql_query, language= 'sql')
                 st.caption(f'Chart logic selected: {metadata.chart_type.upper()} | X: {metadata.x_axis} | Y: {metadata.y_axis}')
+
+            # Rendering Result Dataframe:
+            col1, col2= st.columns([1,2])
+            with col1:
+                st.subheader('Results')
+                st.dataframe(data= df,
+                             use_container_width= True)
