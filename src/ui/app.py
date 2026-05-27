@@ -20,3 +20,11 @@ st.set_page_config(
 st.title('📊 Agentic Data Intelligence Hub')
 st.markdown('Ask natural language questions about your e-commerce data. It will get converted to SQL, and you can verify the logic before trusting the results.')
 st.divider()
+
+# Sidebar for User Input:
+with st.sidebar:
+    st.header('Query Engine')
+    user_query= st.text_area('Ask a business question:',
+                             placeholder= 'e.g., What is our total revenue by product category?')
+    run_button= st.button('Generate Insights',
+                          type= 'secondary')
