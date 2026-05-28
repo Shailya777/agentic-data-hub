@@ -27,12 +27,23 @@ st.divider()
 with st.sidebar:
     st.header('Query Engine')
     user_query= st.text_area('Ask a business question:',
-                             placeholder= 'e.g., What is our total revenue by product category?')
+                             placeholder= 'e.g., What was our total revenue last quarter, and what are customers complaining about regarding delivery?')
     run_button= st.button('Generate Insights',
                           type= 'primary')
 
 # Main Execution Logic:
 if run_button and user_query:
+
+    #Intent-Routing:
+    with st.spinner('Analyzing Intent...'):
+        routing_result= route_query(user_query= user_query)
+
+    with st.expander("Router Logic", expanded= True):
+        st.info(f"**Selected Engines:** {routing_result.engines}")
+        st.caption(f"**Reasoning: {routing_result.reasoning}")
+
+    st.divider()
+
     with st.spinner('Analyzing request and generating SQL..'):
 
         # Calling SQL Engine:
