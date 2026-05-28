@@ -105,6 +105,17 @@ def execute_rag_query(user_query: str, n_results: int=5) -> str:
     """
     user_prompt= f"User Query: {user_query}\n\nCustomer Review Context:\n{context}"
 
+    response= openai.chat.completions.create(
+        model= 'gpt-40',
+        messages= [
+            {'role': 'system', 'content': system_prompt},
+            {'role': 'user', 'content': user_prompt}
+        ],
+        temperature= 0.3, #Low temperature for factual synthesis, slight creativity for readability
+    )
+
+    return response.choices[0].message.content
+
 
 
 
