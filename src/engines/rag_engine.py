@@ -96,6 +96,16 @@ def execute_rag_query(user_query: str, n_results: int=5) -> str:
         score= metadata_list[index]['score']
         context += f"--- Review {index+1} (Rating: {score} stars) ---\n{review}\n\n"
 
+    # Synthesizing Answer Using Found Context:
+    system_prompt= """
+    You are a Customer Experience Analyst for an e-commerce company.
+    Answer the user's query using ONLY the provided customer review context.
+    Identify common themes, quote specific complaints or praises if highly relevant, 
+    and provide a professional summary. If the context does not contain the answer, say so.
+    """
+    user_prompt= f"User Query: {user_query}\n\nCustomer Review Context:\n{context}"
+
+
 
 
 
