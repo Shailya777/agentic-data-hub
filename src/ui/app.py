@@ -44,6 +44,17 @@ if run_button and user_query:
 
     st.divider()
 
+    # Parallel Execution (Handling Multi-Intent if Necessary):
+
+    # RAG Engine Trigger:
+    if 'RAG_ENGINE' in routing_result.engines:
+        st.subheader('Qualitative Insights (Customer Reviews)')
+        with st.spinner('Querying Vector Database and Synthesizing...')
+            rag_response= execute_rag_query(user_query= user_query, n_results= 10)
+            st.write(rag_response)
+        st.divider()
+
+
     with st.spinner('Analyzing request and generating SQL..'):
 
         # Calling SQL Engine:
