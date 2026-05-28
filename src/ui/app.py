@@ -105,3 +105,11 @@ if run_button and user_query:
                 st.error('The engine failed to return data. Check the terminal logs for database or self-correction errors.')
 
         st.divider()
+
+    # Predictive Engine Trigger (Placeholder):
+    if 'PREDICTIVE_ENGINE' in routing_result.engines:
+        st.warning('🔮 **Predictive Engine:** Forecasting and Anomaly Detection are yet to be Implemented.')
+
+    # Unknown Route:
+    if 'UNKNOWN' in routing_result.engines:
+        st.error("❓ I couldn't determine how to answer this question. Please ask a question related to e-commerce revenue or customer reviews.")
