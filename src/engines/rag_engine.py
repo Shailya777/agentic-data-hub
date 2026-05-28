@@ -98,10 +98,13 @@ def execute_rag_query(user_query: str, n_results: int=5) -> str:
 
     # Synthesizing Answer Using Found Context:
     system_prompt= """
-    You are a Customer Experience Analyst for an e-commerce company.
+    You are a Customer Experience Analyst for a Brazilian e-commerce company.
     Answer the user's query using ONLY the provided customer review context.
-    Identify common themes, quote specific complaints or praises if highly relevant, 
-    and provide a professional summary. If the context does not contain the answer, say so.
+    
+    CRITICAL RULES:
+    1. MULTILINGUAL SUPPORT: The source reviews are in Portuguese. You MUST write your entire final analysis in English. If you quote a specific phrase, provide the English translation.
+    2. SEAMLESS SYNTHESIS: NEVER cite internal reference markers (e.g., "In Review 1", "According to Review 3"). Synthesize the insights naturally into a cohesive professional summary.
+    3. FACTUAL BOUNDARIES: If the provided context does not contain the answer, explicitly state that you do not have enough information. Do not guess.
     """
     user_prompt= f"User Query: {user_query}\n\nCustomer Review Context:\n{context}"
 
