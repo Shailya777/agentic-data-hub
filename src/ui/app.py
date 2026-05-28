@@ -49,56 +49,59 @@ if run_button and user_query:
     # RAG Engine Trigger:
     if 'RAG_ENGINE' in routing_result.engines:
         st.subheader('Qualitative Insights (Customer Reviews)')
-        with st.spinner('Querying Vector Database and Synthesizing...')
+        with st.spinner('Querying Vector Database and Synthesizing...'):
             rag_response= execute_rag_query(user_query= user_query, n_results= 10)
             st.write(rag_response)
         st.divider()
 
+    # SQL Engine Trigger:
+    if 'SQL_ENGINE' in routing_result.engines:
+        st.subheader('Quantitative Insights (Structured Data)')
+        with st.spinner('Generating SQL and Executing...'):
+            sql_result= execute_text_to_sql(user_query= user_query)
+            df = sql_result.get('dataframe')
+            metadata= sql_result.get('metadata')
 
-    with st.spinner('Analyzing request and generating SQL..'):
+            # Displaying Result and Chart:
+            if df is not None and not df.empty and metadata is not None:
+                # Displaying Generated SQL for Varification:
+                with st.expander('🔍 View AI-Generated SQL', expanded= False):
+                    st.code(metadata.sql_query, language= 'sql')
+                    st.caption(f'Chart logic selected: {metadata.chart_type.upper()} | X: {metadata.x_axis} | Y: {metadata.y_axis}')
 
-        # Calling SQL Engine:
-        result= execute_text_to_sql(user_query)
-        df = result.get('dataframe')
-        metadata= result.get('metadata')
+                # Rendering Result Dataframe:
+                col1, col2= st.columns([1,2])
 
-        # Displaying Result and Chart:
-        if df is not None and not df.empty and metadata is not None:
-            # Displaying Generated SQL for Varification:
-            with st.expander('🔍 View AI-Generated SQL', expanded= False):
-                st.code(metadata.sql_query, language= 'sql')
-                st.caption(f'Chart logic selected: {metadata.chart_type.upper()} | X: {metadata.x_axis} | Y: {metadata.y_axis}')
-
-            # Rendering Result Dataframe:
-            col1, col2= st.columns([1,2])
-            with col1:
-                st.subheader('Results')
-                st.dataframe(data= df,
+                with col1:
+                    st.subheader('Results')
+                    st.dataframe(data= df,
                              use_container_width= True)
 
-            with col2:
-                st.subheader('Visualization')
+                with col2:
+                    st.subheader('Visualization')
 
-                # Deciding Chart Type based on Metadata:
-                if metadata.needs_chart and metadata.chart_type is not None:
-                    try:
-                        if metadata.chart_type == 'bar':
-                            st.bar_chart(data= df, x= metadata.x_axis, y= metadata.y_axis)
+                    # Deciding Chart Type based on Metadata:
+                    if metadata.needs_chart and metadata.chart_type is not None:
+                        try:
+                            if metadata.chart_type == 'bar':
+                                st.bar_chart(data= df, x= metadata.x_axis, y= metadata.y_axis)
 
-                        elif metadata.chart_type == 'line':
-                            st.line_chart(data= df, x= metadata.x_axis, y= metadata.y_axis)
+                            elif metadata.chart_type == 'line':
+                                st.line_chart(data= df, x= metadata.x_axis, y= metadata.y_axis)
 
-                        elif metadata.chart_type == 'scatter':
-                            st.scatter_chart(data= df, x= metadata.x_axis, y= metadata.y_axis)
+                            elif metadata.chart_type == 'scatter':
+                                st.scatter_chart(data= df, x= metadata.x_axis, y= metadata.y_axis)
 
-                        else:
-                            st.warning(f'Requested chart type {metadata.chart_type} not supported')
+                            else:
+                                st.warning(f'Requested chart type {metadata.chart_type} not supported')
 
-                    except Exception as e:
-                        st.error(f'Failed to render chart. Please check axis mapping. Error: {e}')
+                        except Exception as e:
+                            st.error(f'Failed to render chart. Please check axis mapping. Error: {e}')
 
-                else:
-                    st.info('This Data does not require chart (e.g., single metric return).')
+                    else:
+                        st.info('This Data does not require chart (e.g., single metric return).')
 
-        else:
-            st.error('The engine failed to return data. Check the terminal logs for database or self-correction errors.')
+            else:
+                st.error('The engine failed to return data. Check the terminal logs for database or self-correction errors.')
+
+        st.divider()
