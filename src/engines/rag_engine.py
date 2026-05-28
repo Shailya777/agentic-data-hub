@@ -106,7 +106,7 @@ def execute_rag_query(user_query: str, n_results: int=5) -> str:
     user_prompt= f"User Query: {user_query}\n\nCustomer Review Context:\n{context}"
 
     response= openai.chat.completions.create(
-        model= 'gpt-40',
+        model= 'gpt-4o',
         messages= [
             {'role': 'system', 'content': system_prompt},
             {'role': 'user', 'content': user_prompt}
@@ -117,10 +117,15 @@ def execute_rag_query(user_query: str, n_results: int=5) -> str:
     return response.choices[0].message.content
 
 
-
-
-
 if __name__ == '__main__':
-    reviews_file= os.path.abspath(os.path.join(os.path.dirname(__file__),"../../data/raw/olist_order_reviews_dataset.csv"))
-    if collection.count() == 0:
-        build_vector_database(csv_path= reviews_file)
+    # ONLY RUN THIS UNCOMMENTED THE FIRST TIME to build the DB
+    #reviews_file= os.path.abspath(os.path.join(os.path.dirname(__file__),"../../data/raw/olist_order_reviews_dataset.csv"))
+    #if collection.count() == 0:
+    #    build_vector_database(csv_path= reviews_file)
+
+    # Testing Retrieval and Answer Synthesis:
+    test_query= 'What are the most common complaints about delivery?'
+    print(f'User Query: {test_query}\n')
+    print('Synthesizing Answer using VectorDB..\n')
+    answer= execute_rag_query(user_query= test_query, n_results= 10)
+    print(answer)
