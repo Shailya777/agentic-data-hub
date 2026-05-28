@@ -69,6 +69,25 @@ def build_vector_database(csv_path: str, sample_size: int= 1000):
 
     print('Vector database Successfully Populated!')
 
+# Executing RAG Query and Getting Most Relevant Reviews:
+def execute_rag_query(user_query: str, n_results: int=5) -> str:
+    """
+    Takes a natural language question, finds the most relevant reviews,
+    and uses an LLM to synthesize a qualitative answer.
+    :param user_query: User's Query in natural language format.
+    :param n_results: Number of Closest Vectors to return while DB Search.
+    :return: Answer to User's Query Synthesized by LLM Using found Context from VectorDB.
+    """
+
+    # Retrieving Relevant Documents from ChromaDB:
+    results= collection.query(
+        query_texts= [user_query],
+        n_results= n_results
+    )
+    retrieved_reviews= results['documents'][0]
+    metadata_list= results['metadatas'][0]
+
+
 if __name__ == '__main__':
     reviews_file= os.path.abspath(os.path.join(os.path.dirname(__file__),"../../data/raw/olist_order_reviews_dataset.csv"))
     if collection.count() == 0:
