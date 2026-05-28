@@ -18,7 +18,7 @@ chroma_client= chromadb.PersistentClient(path= DB_PATH)
 # Embedding:
 embedding= embedding_functions.OpenAIEmbeddingFunction(
     api_key= OPENAI_API_KEY,
-    model_name= 'text_embedding-3-small'
+    model_name= 'text-embedding-3-small'
 )
 
 # Get or Create Collection in Vector DB:
@@ -68,3 +68,8 @@ def build_vector_database(csv_path: str, sample_size: int= 1000):
     )
 
     print('Vector database Successfully Populated!')
+
+if __name__ == '__main__':
+    reviews_file= os.path.abspath(os.path.join(os.path.dirname(__file__),"../../data/raw/olist_order_reviews_dataset.csv"))
+    if collection.count() == 0:
+        build_vector_database(csv_path= reviews_file)
