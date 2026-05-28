@@ -87,6 +87,17 @@ def execute_rag_query(user_query: str, n_results: int=5) -> str:
     retrieved_reviews= results['documents'][0]
     metadata_list= results['metadatas'][0]
 
+    if not retrieved_reviews:
+        return "No relevant customer reviews found for this query."
+
+    # Formatting Context for LLM:
+    context= ""
+    for index, review in enumerate(retrieved_reviews):
+        score= metadata_list[index]['score']
+        context += f"--- Review {index+1} (Rating: {score} stars) ---\n{review}\n\n"
+
+
+
 
 if __name__ == '__main__':
     reviews_file= os.path.abspath(os.path.join(os.path.dirname(__file__),"../../data/raw/olist_order_reviews_dataset.csv"))
