@@ -34,26 +34,26 @@ class RoutingResponse(BaseModel):
         description= "Why these engines and sub-queries were chosen."
     )
 
-def route_query(user_query: str) -> IntentRoute:
+def route_query(user_query: str) -> RoutingResponse:
     """
     Analyzes a user's natural language query and routes it to one OR MORE specialized engines.
     :param user_query: User's natural language query.
-    :return: IntentRoute object.
+    :return: RoutingResponse object.
     """
 
     system_prompt= """
-    You are the central Intent Orchestrator for an E-commerce Data Intelligence Hub.
-    Your job is to analyze the user's query and determine which specialized engines are required to answer it fully.
-    A single query might require multiple engines.
+    You are a Master Orchestrator for an E-commerce Data Hub.
+    Your job is to read the user's prompt, determine which database engines are required, 
+    and DECOMPOSE the prompt into specific sub-queries for each engine.
 
     Available Engines:
-    1. SQL_ENGINE: Hard numbers, aggregations, timelines, relational data (revenue, order counts, product dimensions).
-    2. RAG_ENGINE: Qualitative analysis, reading customer reviews, subjective feedback.
-    3. PREDICTIVE_ENGINE: Future forecasting, machine learning predictions, anomaly detection.
+    - SQL_ENGINE: For quantitative data, math, revenue, counting, and structured database queries.
+    - RAG_ENGINE: For qualitative data, synthesizing customer reviews, and text analysis.
+    - PREDICTIVE_ENGINE: For forecasting and machine learning.
+    - UNKNOWN: If the query is completely unrelated to e-commerce.
 
-    Rules:
-    - If a query asks for data from multiple domains (e.g., revenue AND customer sentiment), return multiple engines.
-    - If the query is completely unrelated to e-commerce, return ['UNKNOWN'].
+    CRITICAL RULE: If a query requires multiple engines, create a separate task for each. 
+    Rewrite the `sub_query` so the target engine ONLY sees the part of the question it is responsible for answering.
     """
 
     response= openai.chat.completions.parse(
@@ -62,7 +62,7 @@ def route_query(user_query: str) -> IntentRoute:
             {'role': 'system', 'content': system_prompt},
             {'role': 'user', 'content': user_query},
         ],
-        response_format= IntentRoute,
+        response_format= RoutingResponse,
         temperature= 0.0
     )
 
@@ -96,5 +96,6 @@ if __name__ == '__main__':
     for query in test_queries:
         print(f"\nUser Query: {query}")
         result = route_query(query)
-        print(f"Routed To: {result.engines}")
-        print(f"Reasoning: {result.reasoning}")
+        print(f'Reasoning: {result.reasoning}\n')
+        for task in result.tasks:
+            print(f"Engine: {task.engine_name} | Sub-Query: {task.sub_query}")
