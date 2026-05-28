@@ -7,8 +7,10 @@ import pandas as pd
 #print(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
-# Importing SQL Engine Module:
+# Importing Intent-Routing, SQL-Engine, RAG-Engine Module:
+from src.agents.intent_router import route_query
 from src.engines.sql_engine import execute_text_to_sql
+from src.engines.rag_engine import execute_rag_query
 
 # Page Config:
 st.set_page_config(
