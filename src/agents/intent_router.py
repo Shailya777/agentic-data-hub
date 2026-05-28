@@ -7,21 +7,31 @@ from typing import List
 
 # Loading Environment Variables
 load_dotenv()
-print(f"OpenAI Version: {o.__version__}")
 
 # Initializing OpenAI Client:
 openai = OpenAI(api_key= os.getenv("OPENAI_API_KEY"))
 
-# Intent Route Class:
-class IntentRoute(BaseModel):
+
+class EngineTask(BaseModel):
     """
-    The structured output schema for multi-intent routing.
+    Structured Output Schema to pass while Intent Routing.
     """
-    engines : List[str] = Field(
-        description= "A list of required engines. Valid options: 'SQL_ENGINE', 'RAG_ENGINE', 'PREDICTIVE_ENGINE', 'UNKNOWN'.",
+    engine_name: str = Field(
+        description= "Must be 'SQL_ENGINE', 'RAG_ENGINE', 'PREDICTIVE_ENGINE', or 'UNKNOWN'"
+    )
+    sub_query: str= Field(
+        description= "The specific portion of the user's request rewritten as a standalone question for this engine. Do not include parts of the prompt meant for other engines."
+    )
+
+class RoutingResponse(BaseModel):
+    """
+    List of Structured Outputs (EngineTask).
+    """
+    tasks : List[EngineTask] = Field(
+        description= "List of Tasks to Execute",
     )
     reasoning: str= Field(
-        description= "A one-sentence justification for why these specific engines were selected."
+        description= "Why these engines and sub-queries were chosen."
     )
 
 def route_query(user_query: str) -> IntentRoute:
