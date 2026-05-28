@@ -15,12 +15,12 @@ from src.engines.rag_engine import execute_rag_query
 # Page Config:
 st.set_page_config(
     page_title= 'Agentic Data Hub',
-    page_icon= '📊',
+    page_icon= '🧠',
     layout= 'wide',
 )
 
 st.title('📊 Agentic Data Intelligence Hub')
-st.markdown('Ask natural language questions about your e-commerce data. It will get converted to SQL, and you can verify the logic before trusting the results.')
+st.markdown('Ask natural language questions. The Intent Router will autonomously dispatch your query to the correct database engines (SQL, Vector, or both).')
 st.divider()
 
 # Sidebar for User Input:
