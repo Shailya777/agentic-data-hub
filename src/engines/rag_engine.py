@@ -26,3 +26,21 @@ collection= chroma_client.get_or_create_collection(
     name= 'customer_reviews',
     embedding_function= embedding
 )
+
+# Building Vector Database:
+def build_vector_database(csv_path: str, sample_size: int= 1000):
+    """
+    Reads the reviews CSV, filters for actual text comments, and embeds them into ChromaDB.
+    Run this ONCE to populate the local vector database.
+    :param csv_path: Path to the reviews CSV file.
+    :param sample_size: Number of reviews to store in Vector DB.
+    """
+
+    print('Loading reviews dataset...')
+    df= pd.read_csv(csv_path)
+
+    # Filtering Out Empty Reviews:
+    df= df.dropna(subset=['review_comment_message'])
+
+    # Sampling sample_size reviews from data:
+    df= df.tail(sample_size).reset_index(drop= True)
