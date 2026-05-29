@@ -54,5 +54,11 @@ def extract_delivery_data():
         c.customer_state,
         s.seller_state;
     """
+
+    print('Executing Delivery Data Extraction query...')
+    df= pd.read_sql(sql= extraction_query,
+                    con= db_engine)
+    print(df.head())
+
 if __name__ == '__main__':
     extract_delivery_data()
