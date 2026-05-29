@@ -64,14 +64,29 @@ def extract_delivery_data(engine, output_dir):
 
     print('Executing Delivery Data Extraction query...')
     df= pd.read_sql(sql= extraction_query,
-                   con= db_engine)
+                   con= engine)
 
     # Saving Extracted Data to CSV:
     df.to_csv(os.path.join(output_dir, 'delivery_training_data.csv'), index= False)
 
     print(f" -> Saved {len(df)} records. Baseline Delay Rate: {(df['is_delayed'].mean() * 100):.2f}%")
 
+def extract_churn_data(engine, output_dir):
+    """
+    Extracts feature-engineered data from MySQL to train the Customer Churn Predictor.
+    :param engine: SQLAlchemy engine object.
+    :param output_dir: Path to directory where extracted training data will be saved.
+    """
+    extraction_query= """
+    
+    """
 
+def extract_forecasting_data(engine, output_dir):
+    """
+    Extracts feature-engineered data from MySQL to train the Forecasting Predictor.
+    :param engine: SQLAlchemy engine object.
+    :param output_dir: Path to directory where extracted training data will be saved.
+    """
 if __name__ == '__main__':
     # Output Directory to Store Extracted Delivery Delay Data:
     output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../data/processed'))
