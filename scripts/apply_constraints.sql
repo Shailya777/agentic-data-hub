@@ -29,6 +29,8 @@ MODIFY order_id VARCHAR(255);
 ALTER TABLE product_category_name_translation 
 MODIFY product_category_name VARCHAR(255);
 
+ALTER TABLE order_reviews MODIFY order_id VARCHAR(255);
+
 
 -- 2. Establish Primary Keys
 -- Single Column Keys
@@ -62,3 +64,11 @@ ALTER TABLE order_items
 ALTER TABLE order_payments
     ADD CONSTRAINT fk_payments_orders
     FOREIGN KEY (order_id) REFERENCES orders(order_id);
+
+  -- Make sure the reviews table has an index for faster lookups
+ALTER TABLE order_reviews ADD INDEX (order_id);
+
+-- Add the Foreign Key linking it to the orders table
+ALTER TABLE order_reviews
+ADD CONSTRAINT fk_reviews_orders
+FOREIGN KEY (order_id) REFERENCES orders(order_id);
