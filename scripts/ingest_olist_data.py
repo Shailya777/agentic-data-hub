@@ -49,7 +49,8 @@ if __name__ == "__main__":
         '../data/raw/olist_products_dataset.csv': 'products',
         '../data/raw/olist_order_payments_dataset.csv': 'order_payments',
         '../data/raw/olist_sellers_dataset.csv': 'sellers',
-        '../data/raw/product_category_name_translation.csv': 'product_category_name_translation'
+        '../data/raw/product_category_name_translation.csv': 'product_category_name_translation',
+        '../data/raw/olist_order_reviews_dataset.csv': 'order_reviews'
     }
 
     for csv_path, table_name in data_files.items():
