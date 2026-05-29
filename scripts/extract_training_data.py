@@ -7,21 +7,27 @@ from dotenv import load_dotenv
 # Loading Environment Variables:
 load_dotenv()
 
+def get_db_engine():
+    """
+    Creates Engine for connecting to MySQL database
+    :return: create_engine.
+    """
+    print('Connecting to MySQL database...')
+    engine_url = URL.create(
+        drivername='mysql+pymysql',
+        username=os.getenv('DB_USER'),
+        password=os.getenv('DB_PASSWORD'),
+        host=os.getenv('DB_HOST'),
+        database=os.getenv('DB_NAME')
+    )
+    return create_engine(engine_url)
+
 def extract_delivery_data(engine, output_dir):
     """
     Extracts feature-engineered data from MySQL to train the Delivery Delay Predictor.
     :param engine: SQLAlchemy engine object.
     :param output_dir: Path to directory where extracted training data will be saved.
     """
-    print('Connecting to MySQL database...')
-    engine_url = URL.create(
-        drivername= 'mysql+pymysql',
-        username= os.getenv('DB_USER'),
-        password= os.getenv('DB_PASSWORD'),
-        host= os.getenv('DB_HOST'),
-        database= os.getenv('DB_NAME')
-    )
-    db_engine = create_engine(engine_url)
 
     extraction_query= """
     SELECT 
