@@ -93,12 +93,36 @@ def extract_churn_data(engine, output_dir):
     order by total_orders desc;
     """
 
+    print('Executing Churn Data Extraction query...')
+    df = pd.read_sql(sql= extraction_query,
+                     con= engine)
+
+    # Saving Extracted Data to CSV:
+    df.to_csv(os.path.join(output_dir, 'churn_training_data.csv'), index=False)
+
+    print(f"Saved {len(df)} Customer Profiles.")
+
 def extract_forecasting_data(engine, output_dir):
     """
     Extracts feature-engineered data from MySQL to train the Forecasting Predictor.
     :param engine: SQLAlchemy engine object.
     :param output_dir: Path to directory where extracted training data will be saved.
     """
+    extraction_query= """
+    SELECT 
+        DATE(o.order_purchase_timestamp) AS sale_date,
+        pct.product_category_name_english AS category,
+        COUNT(oi.order_item_id) AS units_sold,
+        SUM(oi.price) AS daily_revenue
+    FROM orders o
+    JOIN order_items oi ON o.order_id = oi.order_id
+    JOIN products p ON oi.product_id = p.product_id
+    JOIN product_category_name_translation pct ON p.product_category_name = pct.product_category_name
+    WHERE o.order_status = 'delivered'
+    GROUP BY DATE(o.order_purchase_timestamp), pct.product_category_name_english
+    ORDER BY sale_date ASC;
+    """
+
 if __name__ == '__main__':
     # Output Directory to Store Extracted Delivery Delay Data:
     output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../data/processed'))
