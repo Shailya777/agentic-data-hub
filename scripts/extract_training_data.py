@@ -1,3 +1,4 @@
+import argparse
 import os
 import pandas as pd
 from sqlalchemy import create_engine
@@ -123,8 +124,29 @@ def extract_forecasting_data(engine, output_dir):
     ORDER BY sale_date ASC;
     """
 
+    print('Executing Demand Forecasting Data Extraction query...')
+    df = pd.read_sql(sql= extraction_query,
+                     con= engine)
+
+    # Saving Extracted Data to CSV:
+    df.to_csv(os.path.join(output_dir, 'forecasting_training_data.csv'), index=False)
+
+    print(f"Saved {len(df)} Daily Category Aggregations.")
+
 if __name__ == '__main__':
-    # Output Directory to Store Extracted Delivery Delay Data:
-    output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../data/processed'))
-    os.makedirs(output_dir, exist_ok=True)
-    extract_delivery_data()
+
+    # Database Engine:
+    db_engine= get_db_engine()
+
+    # Output Directory to Store CSV Files:
+    output_dir= os.path.abspath(os.path.join(os.path.dirname(__file__), '../data/processed'))
+    os.makedirs(output_dir, exist_ok= True)
+
+    # Extracting Delivery Data for Training:
+    extract_delivery_data(engine= db_engine, output_dir= output_dir)
+
+    # Extracting Customer Churn Data for Training:
+    extract_churn_data(engine= db_engine, output_dir= output_dir)
+
+    # Extracting Demand Forecasting Data for Training:
+    extract_forecasting_data(engine= db_engine, output_dir= output_dir)
