@@ -57,8 +57,22 @@ def extract_delivery_data():
 
     print('Executing Delivery Data Extraction query...')
     df= pd.read_sql(sql= extraction_query,
-                    con= db_engine)
-    print(df.head())
+                   con= db_engine)
+
+    #Output Directory to Store Extracted Delivery Delay Data:
+    output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../data/processed'))
+    os.makedirs(output_dir, exist_ok= True)
+
+    # Saving Extracted Data to CSV:
+    output_path= os.path.join(output_dir, 'delivery_training_data.csv')
+    df.to_csv(output_path, index= False)
+
+    print(f'Successfully extracted training data. Extracted {len(df)} rows.')
+    print(f'Data Saved to {output_path}')
+
+    # Checking Data Imbalance for Target Variable:
+    delay_rate= df['is_delayed'].mean() * 100
+    print(f'Delay Rate {delay_rate:.2f}%')
 
 if __name__ == '__main__':
     extract_delivery_data()
