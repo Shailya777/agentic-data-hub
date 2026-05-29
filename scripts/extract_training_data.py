@@ -78,7 +78,19 @@ def extract_churn_data(engine, output_dir):
     :param output_dir: Path to directory where extracted training data will be saved.
     """
     extraction_query= """
-    
+    SELECT 
+        c.customer_unique_id,
+        MAX(o.order_purchase_timestamp) AS last_purchase_date,
+        COUNT(DISTINCT o.order_id) AS total_orders,
+        SUM(oi.price + oi.freight_value) AS total_spent,
+        AVG(r.review_score) AS avg_review_score
+    FROM customers c
+    JOIN orders o ON c.customer_id = o.customer_id
+    JOIN order_items oi ON o.order_id = oi.order_id
+    LEFT JOIN order_reviews r ON o.order_id = r.order_id
+    WHERE o.order_status = 'delivered'
+    GROUP BY c.customer_unique_id
+    order by total_orders desc;
     """
 
 def extract_forecasting_data(engine, output_dir):
