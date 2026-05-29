@@ -7,10 +7,11 @@ from dotenv import load_dotenv
 # Loading Environment Variables:
 load_dotenv()
 
-def extract_delivery_data():
+def extract_delivery_data(engine, output_dir):
     """
     Extracts feature-engineered data from MySQL to train the Delivery Delay Predictor.
-    :return:
+    :param engine: SQLAlchemy engine object.
+    :param output_dir: Path to directory where extracted training data will be saved.
     """
     print('Connecting to MySQL database...')
     engine_url = URL.create(
@@ -59,20 +60,14 @@ def extract_delivery_data():
     df= pd.read_sql(sql= extraction_query,
                    con= db_engine)
 
-    #Output Directory to Store Extracted Delivery Delay Data:
-    output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../data/processed'))
-    os.makedirs(output_dir, exist_ok= True)
-
     # Saving Extracted Data to CSV:
-    output_path= os.path.join(output_dir, 'delivery_training_data.csv')
-    df.to_csv(output_path, index= False)
+    df.to_csv(os.path.join(output_dir, 'delivery_training_data.csv'), index= False)
 
-    print(f'Successfully extracted training data. Extracted {len(df)} rows.')
-    print(f'Data Saved to {output_path}')
+    print(f" -> Saved {len(df)} records. Baseline Delay Rate: {(df['is_delayed'].mean() * 100):.2f}%")
 
-    # Checking Data Imbalance for Target Variable:
-    delay_rate= df['is_delayed'].mean() * 100
-    print(f'Delay Rate {delay_rate:.2f}%')
 
 if __name__ == '__main__':
+    # Output Directory to Store Extracted Delivery Delay Data:
+    output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../data/processed'))
+    os.makedirs(output_dir, exist_ok=True)
     extract_delivery_data()
