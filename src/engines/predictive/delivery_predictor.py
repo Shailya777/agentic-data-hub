@@ -59,14 +59,24 @@ def get_order_features_from_db(order_id: str) -> dict:
         return None
     return df.to_dict(orient= 'records')[0]
 
-def predict_delivery_delay(order_data: dict) -> dict:
+def predict_delivery_delay(input_data: str | dict) -> dict:
     """
     Loads the trained XGBoost pipeline, runs inference on real-time order data,
     and applies business logic thresholds to predict delivery delays.
-    :param order_data: Order Data to use as Features.
+    :param input_data: raw dictionary of features OR an order_id string.
     :return: Dictionary of predicted Order Delay Staus with Probability.
     """
     try:
+        # If Input is a String, Fetching Order Details fromDB:
+        if isinstance(input_data, str):
+            print(f'Fetching Database Data for Order ID: {input_data}...')
+            order_data= get_order_features_from_db(order_id= input_data)
+            if not order_data:
+                return {'error': f'Order ID {input_data} Not Found in Database.'}
+        else:
+            print('Using Manually Provided Features.')
+            order_data= input_data
+
         # Loading The Saved Model:
         current_dir= os.path.dirname(os.path.abspath(__file__))
         model_path= os.path.abspath(os.path.join(current_dir, '../../../models/delivery_delay_pipeline.pkl'))
@@ -102,6 +112,7 @@ def predict_delivery_delay(order_data: dict) -> dict:
 
 if __name__ == '__main__':
     # Simulating a heavy, interstate order placed on a Friday (Day 6) right before Christmas (Month 12)
+    print('Testing Predictive Engine with Order Features Given Directly...')
     test_order = {
         'estimated_days_to_deliver': 14,
         'total_freight_value': 45.50,
@@ -112,10 +123,10 @@ if __name__ == '__main__':
         'is_interstate': 1,
         'seller_historical_delay_rate': 0.35
     }
-    print('Testing Predictive Engine...')
     result= predict_delivery_delay(test_order)
     print(f'Result: {result}')
 
     # Testing Order Features from DB:
+    print('\nTesting Predictive Engine with Order ID...')
     test_order_id= '00010242fe8c5a6d1ba2dd792cb16214'
-    print(get_order_features_from_db(test_order_id))
+    print(predict_delivery_delay(test_order_id))
