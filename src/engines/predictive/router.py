@@ -8,6 +8,22 @@ from src.engines.predictive.delivery_predictor import predict_delivery_delay
 load_dotenv()
 openai= OpenAI(api_key= os.getenv('OPENAI_API_KEY'))
 
+class SimulationFeatures(BaseModel):
+    """
+    Schema for simulation features.
+    """
+    estimated_days_to_deliver: int = Field(default=11,
+                                           description="Estimated shipping window in days. Default to 11 if unmentioned.")
+    total_freight_value: float = Field(default=20.0, description="Freight cost value. Default to 20.0 if unmentioned.")
+    total_weight_g: int = Field(description="Weight in grams. If user gives kg, multiply by 1000 to convert to grams.")
+    total_volume_cm3: int = Field(description="Volume in cubic centimeters (cm3).")
+    purchase_month: int = Field(default=6, description="Month of purchase (1-12). Default to 6 if unmentioned.")
+    purchase_day_of_week: int = Field(default=2,
+                                      description="Day of week (1=Sunday, 2=Monday, etc.). Default to 2 (Monday) if unmentioned.")
+    is_interstate: int = Field(description="Set to 1 if shipping interstate/across states, 0 if within the same state.")
+    seller_historical_delay_rate: float = Field(default=0.08,
+                                                description="Historical failure rate of the vendor. Default to our dataset baseline of 0.08 if unmentioned.")
+
 class PredictiveRoutingDecision(BaseModel):
     """
     Schema for Choosing Predictive Model and Arguments.
@@ -23,9 +39,9 @@ class PredictiveRoutingDecision(BaseModel):
         default= None,
         description= 'The extracted alphanumeric order ID if mode is OPERATIONAL'
     )
-    simulation_features: Optional[Dict[str, Any]]= Field(
+    simulation_features: Optional[SimulationFeatures]= Field(
         default= None,
-        description= 'Dictionary of manually simulated metrics if mode is SIMULATION. Keys should exactly match: estimated_days_to_deliver, total_freight_value, total_weight_g, total_volume_cm3, purchase_month, purchase_day_of_week, is_interstate, seller_historical_delay_rate'
+        description= 'Populated ONLY if mode is SIMULATION.'
     )
 
 def route_predictive_task(sub_query: str) -> dict:
