@@ -77,13 +77,15 @@ def route_predictive_task(sub_query: str) -> dict:
     )
 
     decision= response.choices[0].message.parsed
-    print(decision)
+
+    print(f'Model: {decision.model_type} & Mode: {decision.mode}')
+
     # Dispatching to Correct Machine Learning Model:
     if decision.model_type == 'DELAY':
         if decision.mode == 'OPERATIONAL' and decision.order_id:
             return predict_delivery_delay(decision.order_id)
         elif decision.mode == 'SIMULATION' and decision.simulation_features:
-            return predict_delivery_delay(decision.simulation_features)
+            return predict_delivery_delay(decision.simulation_features.model_dump())
         else:
             return {'error': 'Invalid combination of mode and arguments for delay prediction.'}
 
