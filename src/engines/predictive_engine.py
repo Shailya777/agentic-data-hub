@@ -53,7 +53,7 @@ if __name__ == '__main__':
         'purchase_month': 12,
         'purchase_day_of_week': 6,
         'is_interstate': 1,
-        'seller_historical_delay_rate': 0.35  # A notoriously slow seller
+        'seller_historical_delay_rate': 0.35
     }
     print('Testing Predictive Engine...')
     result= predict_delivery_delay(test_order)
