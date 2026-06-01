@@ -16,12 +16,12 @@ class PredictiveRoutingDecision(BaseModel):
     model_type: str= Field(
         description= "Must be 'DELAY', 'CHURN', or 'FORECAST'"
     )
-    model: str= Field(
+    mode: str= Field(
         description= "Must be 'OPERATIONAL' (looking up an ID) or 'SIMULATION' (manual feature simulation)"
     )
     order_id: Optional[str] = Field(
         default= None,
-        description= 'he extracted alphanumeric order ID if mode is OPERATIONAL'
+        description= 'The extracted alphanumeric order ID if mode is OPERATIONAL'
     )
     simulation_features: Optional[Dict[str, Any]]= Field(
         default= None,
@@ -48,3 +48,45 @@ def route_predictive_task(sub_query: str) -> dict:
     - Use 'OPERATIONAL' if the user provides an alphanumeric hash ID (like an order_id or customer_id).
     - Use 'SIMULATION' if the user asks a hypothetical 'What if' question using numeric constraints (weight, volume, months, etc.).
     """
+
+    # Parsing LLM Response:
+    response= openai.chat.completions.parse(
+        model= 'gpt-4o',
+        messages= [
+            {'role': 'system', 'content': system_prompt},
+            {'role': 'user', 'content': sub_query},
+        ],
+        response_format= PredictiveRoutingDecision,
+        temperature= 0.0
+    )
+
+    decision= response.choices[0].message.parsed
+    print(decision)
+    # Dispatching to Correct Machine Learning Model:
+    if decision.model_type == 'DELAY':
+        if decision.mode == 'OPERATIONAL' and decision.order_id:
+            return predict_delivery_delay(decision.order_id)
+        elif decision.mode == 'SIMULATION' and decision.simulation_features:
+            return predict_delivery_delay(decision.simulation_features)
+        else:
+            return {'error': 'Invalid combination of mode and arguments for delay prediction.'}
+
+    elif decision.model_type == 'CHURN':
+        return {'status': 'Yet to be Implemented.', 'message': 'The Customer Churn model training pipeline is currently offline.'}
+
+    elif decision.model_type == 'FORECAST':
+        return {'status': 'Yet to be Implemented.', 'message': 'The Time-Series Demand Forecaster is currently offline.'}
+
+    return {'error': 'Unknown Predictive Model Destination Targeted.'}
+
+if __name__ == '__main__':
+
+    # Testing Delay Prediction by Order ID:
+    print('--- Test 1: OPERATIONAL Delay Prediction ---')
+    q1= 'Check tracking for order ID 00010242fe8c5a6d1ba2dd792cb16214 to see if it will arrive late.'
+    print(route_predictive_task(q1))
+
+    # Testing Delay Prediction by Order Features:
+    print('--- Test 2: SIMULATION Delay Prediction ---')
+    q2= "Will an item with a volume of 50000cm3 and weight of 10kg be delayed if sent interstate this December?"
+    print(route_predictive_task(q2))
