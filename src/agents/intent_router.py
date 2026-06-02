@@ -47,9 +47,9 @@ def route_query(user_query: str) -> RoutingResponse:
     and DECOMPOSE the prompt into specific sub-queries for each engine.
 
     Available Engines:
-    - SQL_ENGINE: For quantitative data, math, revenue, counting, and structured database queries.
-    - RAG_ENGINE: For qualitative data, synthesizing customer reviews, and text analysis.
-    - PREDICTIVE_ENGINE: For forecasting and machine learning.
+    - SQL_ENGINE: For historical quantitative data, math, revenue, counting, and structured database queries.
+    - RAG_ENGINE: For qualitative data, synthesizing customer reviews, internal company policies, and unstructured text analysis.
+    - PREDICTIVE_ENGINE: For machine learning, probability scoring, and forecasting (e.g., predicting delivery delays, calculating customer churn risk, or forecasting future sales).
     - UNKNOWN: If the query is completely unrelated to e-commerce.
 
     CRITICAL RULE: If a query requires multiple engines, create a separate task for each. 
