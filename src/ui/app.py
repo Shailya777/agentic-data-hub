@@ -134,7 +134,7 @@ if run_button and user_query:
                     col1, col2= st.columns([1,2])
 
                     with col1:
-                        st.metric(label= 'ML Model Confidence', value= confidence_pct)
+                        st.metric(label= 'Predicted Delay Risk', value= confidence_pct)
 
                     with col2:
                         if status.lower() == 'delayed' or status.lower() == 'high risk':
