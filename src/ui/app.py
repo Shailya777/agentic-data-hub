@@ -2,7 +2,6 @@ import sys
 import os
 import streamlit as st
 import pandas as pd
-from src.utils.logger import hub_logger
 
 # Adding Project Root to Python's Search Path:
 #print(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
@@ -13,6 +12,9 @@ from src.agents.intent_router import route_query
 from src.engines.sql_engine import execute_text_to_sql
 from src.engines.rag_engine import execute_rag_query
 from src.engines.predictive.router import route_predictive_task
+
+# Importing Logger:
+from src.utils.logger import hub_logger
 
 # Page Config:
 st.set_page_config(
