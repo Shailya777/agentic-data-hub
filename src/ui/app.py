@@ -11,6 +11,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')
 from src.agents.intent_router import route_query
 from src.engines.sql_engine import execute_text_to_sql
 from src.engines.rag_engine import execute_rag_query
+from src.engines.predictive.router import route_predictive_task
 
 # Page Config:
 st.set_page_config(
@@ -110,7 +111,47 @@ if run_button and user_query:
 
         # Predictive Engine Trigger (Placeholder):
         if task.engine_name == 'PREDICTIVE_ENGINE':
-            st.warning('🔮 **Predictive Engine:** Forecasting and Anomaly Detection are yet to be Implemented.')
+            st.subheader('🔮 Predictive Analytics')
+            with st.spinner('Running Machine Learning Inference...'):
+                try:
+                    # Executing Predictive Task:
+                    predictive_result= route_predictive_task(sub_query= task.sub_query)
+
+                    # Components of Predictive Result:
+                    status= predictive_result.get('status', 'Unknown')
+                    confidence= predictive_result.get('confidence', 0.0)
+                    recommendation= predictive_result.get('recommendation', 'No action required.')
+
+                    # Converting Confidence Value to Float from Str:
+                    try:
+                        confidence_float = float(confidence)
+                        confidence_pct = f"{confidence_float * 100:.1f}%"
+                    except (ValueError, TypeError):
+                        # Fallback just in case the model returns a literal string like "N/A" or "85%"
+                        confidence_pct = str(confidence)
+
+                    # Rendering Results:
+                    col1, col2= st.columns([1,2])
+
+                    with col1:
+                        st.metric(label= 'ML Model Confidence', value= confidence_pct)
+
+                    with col2:
+                        if status.lower() == 'delayed' or status.lower() == 'high risk':
+                            st.error(f'**Predicted Status:** {status.upper()} 🚨')
+                        elif status.lower() == 'on time' or status.lower() == 'low risk':
+                            st.success(f'**Predicted Status:** {status.upper()} ✅')
+                        else:
+                            st.warning(f'**Predicted Status:** {status.upper()}')
+
+                    # Displaying Actionable Recommendation:
+                    st.info(f'**Strategic Recommendation:** {recommendation}')
+
+                except Exception as e:
+                    st.info(f'Inference Failed. Error: {e}')
+
+            st.divider()
+
 
         # Unknown Route:
         if task.engine_name == 'UNKNOWN':
