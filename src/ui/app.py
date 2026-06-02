@@ -2,6 +2,7 @@ import sys
 import os
 import streamlit as st
 import pandas as pd
+from src.utils.logger import hub_logger
 
 # Adding Project Root to Python's Search Path:
 #print(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
@@ -34,6 +35,7 @@ with st.sidebar:
 
 # Main Execution Logic:
 if run_button and user_query:
+    hub_logger.info('Initializing query execution lifecycle.')
 
     #Intent-Routing:
     with st.spinner('Analyzing Intent and Decomposing Query (if necessary)...'):
@@ -51,6 +53,7 @@ if run_button and user_query:
 
         # RAG Engine Trigger:
         if task.engine_name == 'RAG_ENGINE':
+            hub_logger.info('Executing Vector RAG Engine.')
             st.subheader('Qualitative Insights (Customer Reviews)')
             with st.spinner('Querying Vector Database and Synthesizing...'):
                 rag_response= execute_rag_query(user_query= task.sub_query, n_results= 10)
@@ -59,6 +62,7 @@ if run_button and user_query:
 
     # SQL Engine Trigger:
         elif task.engine_name == 'SQL_ENGINE':
+            hub_logger.info('Executing SQL Engine.')
             st.subheader('Quantitative Insights (Structured Data)')
             with st.spinner('Generating SQL and Executing...'):
                 sql_result= execute_text_to_sql(user_query= task.sub_query)
@@ -111,6 +115,7 @@ if run_button and user_query:
 
         # Predictive Engine Trigger (Placeholder):
         if task.engine_name == 'PREDICTIVE_ENGINE':
+            hub_logger.info('Executing Predictive Analytics Inference Pipeline.')
             st.subheader('🔮 Predictive Analytics')
             with st.spinner('Running Machine Learning Inference...'):
                 try:
@@ -150,6 +155,7 @@ if run_button and user_query:
                 except Exception as e:
                     st.info(f'Inference Failed. Error: {e}')
 
+            hub_logger.info('Query Execution lifecycle completed successfully.')
             st.divider()
 
 
