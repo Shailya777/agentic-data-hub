@@ -4,6 +4,7 @@ import openai as o
 from openai import OpenAI
 from pydantic import BaseModel, Field
 from typing import List
+from src.utils.logger import hub_logger
 
 # Loading Environment Variables
 load_dotenv()
@@ -41,6 +42,9 @@ def route_query(user_query: str) -> RoutingResponse:
     :return: RoutingResponse object.
     """
 
+    # Logger:
+    hub_logger.info(f"Incoming User Query: {user_query}")
+
     system_prompt= """
     You are a Master Orchestrator for an E-commerce Data Hub.
     Your job is to read the user's prompt, determine which database engines are required, 
@@ -66,9 +70,15 @@ def route_query(user_query: str) -> RoutingResponse:
         temperature= 0.0
     )
 
-    # Parsing the JSON string response back into our Pydantic model
-    return response.choices[0].message.parsed
+    # Parsing the LLM Response:
+    parsed_response=  response.choices[0].message.parsed
 
+    # Logging The Thoughts and Targets of Intent Router:
+    hub_logger.info(f"Router Reasoning: {parsed_response.reasoning}")
+    for task in parsed_response.tasks:
+        hub_logger.info(f"Decomposed Task Assigned -> Engine: {task.engine_name} | Sub-Query: '{task.sub_query}'")
+
+    return parsed_response
 if __name__ == '__main__':
     # Test Cases to Check The Intent Routing:
     test_queries = [
