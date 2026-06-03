@@ -27,47 +27,6 @@ collection= chroma_client.get_or_create_collection(
     embedding_function= embedding
 )
 
-# Building Vector Database:
-def build_vector_database(csv_path: str, sample_size: int= 1000):
-    """
-    Reads the reviews CSV, filters for actual text comments, and embeds them into ChromaDB.
-    Run this ONCE to populate the local vector database.
-    :param csv_path: Path to the reviews CSV file.
-    :param sample_size: Number of reviews to store in Vector DB.
-    """
-
-    print('Loading reviews dataset...')
-    df= pd.read_csv(csv_path)
-
-    # Filtering Out Empty Reviews:
-    df= df.dropna(subset=['review_comment_message'])
-
-    # Sampling sample_size reviews from data:
-    df= df.tail(sample_size).reset_index(drop= True)
-
-    # Embedding reviews and Storing it in Vector Store:
-    documents= []
-    metadatas= []
-    ids= []
-    print(f'Embedding {len(df)} reviews into ChromaDB...')
-    for index, row in df.iterrows():
-        # Combining Title and Message if both exists:
-        title= str(row['review_comment_title']) if pd.notna(row['review_comment_title']) else ''
-        message= str(row['review_comment_message'])
-        full_text= f"Title: {title}\nMessage: {message}".strip()
-
-        documents.append(full_text)
-        metadatas.append({'score': int(row['review_score']), 'review_id': str(row['review_id'])})
-        ids.append(f"doc_{index}")
-
-    # Adding to ChromaDB:
-    collection.add(
-        documents= documents,
-        metadatas= metadatas,
-        ids= ids
-    )
-
-    print('Vector database Successfully Populated!')
 
 # Executing RAG Query and Getting Most Relevant Reviews:
 def execute_rag_query(user_query: str, n_results: int=5) -> str:
