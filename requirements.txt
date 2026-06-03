@@ -24,3 +24,6 @@ joblib==1.4.0
 # Data Visualization (For Jupyter Notebooks)
 matplotlib==3.8.4
 seaborn==0.13.2
+
+# Testing
+pytest
