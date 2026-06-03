@@ -7,3 +7,7 @@
 /data/
 /models/
 /logs/
+
+# Exception:
+!data/documents/
+!data/documents/Olist_Corporate_Policies.pdf
