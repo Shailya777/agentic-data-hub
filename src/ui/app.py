@@ -59,7 +59,7 @@ if run_button and user_query:
             st.subheader('Qualitative Insights')
             with st.spinner('Querying Vector Database and Synthesizing...'):
                 collection_to_query= task.target_collection or 'customer_reviews'
-                rag_response= execute_rag_query(user_query= task.sub_query, collection_name= collection_to_query,  n_results= 10)
+                rag_response= execute_rag_query(user_query= task.sub_query, collection_name= collection_to_query,  n_results= 6)
                 st.write(rag_response)
             st.divider()
 
