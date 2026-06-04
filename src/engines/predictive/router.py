@@ -28,6 +28,7 @@ class PredictiveRoutingDecision(BaseModel):
     """
     Schema for Choosing Predictive Model and Arguments.
     """
+    model_config = {'protected_namespaces': ()}  # To silence the warning about using model_ in name below.
 
     model_type: str= Field(
         description= "Must be 'DELAY', 'CHURN', or 'FORECAST'"
