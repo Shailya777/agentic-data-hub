@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 import openai as o
 from openai import OpenAI
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Optional
 from src.utils.logger import hub_logger
 
 # Loading Environment Variables
@@ -22,6 +22,10 @@ class EngineTask(BaseModel):
     )
     sub_query: str= Field(
         description= "The specific portion of the user's request rewritten as a standalone question for this engine. Do not include parts of the prompt meant for other engines."
+    )
+    target_collection: Optional[str]= Field(
+        default= None,
+        description= "If engine_name is RAG_ENGINE, this MUST be either 'customer_reviews' or 'olist_corporate_policies'. Otherwise, leave null."
     )
 
 class RoutingResponse(BaseModel):
@@ -52,7 +56,9 @@ def route_query(user_query: str) -> RoutingResponse:
 
     Available Engines:
     - SQL_ENGINE: For historical quantitative data, math, revenue, counting, and structured database queries.
-    - RAG_ENGINE: For qualitative data, synthesizing customer reviews, internal company policies, and unstructured text analysis.
+    - RAG_ENGINE: For qualitative data, synthesizing text, and unstructured analysis.
+        * If the user asks about customer sentiment, feedback, or complaints, set target_collection to 'customer_reviews'.
+        * If the user asks about internal rules, SLAs, returns, or operations, set target_collection to 'olist_corporate_policies'.
     - PREDICTIVE_ENGINE: For machine learning, probability scoring, and forecasting (e.g., predicting delivery delays, calculating customer churn risk, or forecasting future sales).
     - UNKNOWN: If the query is completely unrelated to e-commerce.
 
