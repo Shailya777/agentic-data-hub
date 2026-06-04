@@ -103,12 +103,53 @@ def process_chunks_with_llm(chunk_text: str) -> ChunkMetadata:
 
     return response.choices[0].message.parsed
 
+def ingest_to_chroma(chunks: list[str]):
+    """
+    Embeds the chunks and stores them in an isolated ChromaDB collection.
+    :param chunks: Processed Chunks from extract_and_chunk_policies with Summary and Header from process_chunks_with_llm.
+    """
+
+    hub_logger.info('Initializing ChromaDB Client...')
+
+    # Connecting to ChromaDB Directory:
+    DB_PATH= os.path.abspath(os.path.join(os.path.dirname(__file__),"../data/vector_db"))
+    chroma_client= chromadb.PersistentClient(path= DB_PATH)
+
+
+    # Creating Collection for Company Policies in ChromaDB:
+    collection= chroma_client.get_or_create_collection(
+        name= 'olist_corporate_policies'
+    )
+
+    for i, chunk in enumerate(chunks):
+        hub_logger.info(f"Processing Chunk {i+1}/{len(chunks)} through LLM...")
+
+        metadata= process_chunks_with_llm(chunk)
+
+        # Constructing Chunk with Metadata:
+        enhanced_document= f"Title: {metadata.header}\nSummary: {metadata.summary}\n\nContent: \n{chunk}"
+
+        # Generating Embedding for The Chunk:
+        response= openai.embeddings.create(
+            input= enhanced_document,
+            model= 'text-embedding-3-small'
+        )
+        embedding= response.data[0].embedding
+
+        # Inserting into ChromaDB:
+        collection.add(
+            ids= [f"policy_chunk_{i}"],
+            embeddings= [embedding],
+            documents= [enhanced_document],
+            metadatas= [{'source': 'Olist_Corporate_Policy.pdf', "header": metadata.header}],
+        )
+
+    hub_logger.info(f"Ingestion Complete! Corporate Policies Collection is fully populated!")
+
 if __name__ == '__main__':
     pdf_path= 'C:\\Users\\shail\\PycharmProjects\\PythonProject\\agentic-data-hub\\data\\documents\\Olist_Corporate_Policies.pdf'
     if not os.path.exists(pdf_path):
         hub_logger.info(f'PDF File Not Found: {pdf_path}')
     else:
-        test_chunks= extract_and_chunk_policies(pdf_path= pdf_path)
-
-    res= process_chunks_with_llm(chunk_text= test_chunks[1])
-    print(res)
+        chunks= extract_and_chunk_policies(pdf_path= pdf_path)
+        ingest_to_chroma(chunks= chunks)
