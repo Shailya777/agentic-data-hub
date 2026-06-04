@@ -54,14 +54,27 @@ def extract_and_chunk_policies(pdf_path: str) -> list[str]:
     # This searches for a newline, followed by a digit (1-9), a period, a zero, and a space.
     # Because it is a "lookahead", it splits the text right BEFORE the header,
     # ensuring the "1.0 Title" stays attached to its respective paragraph.
-    raw_chunks= re.split(r'(?=\n[1-9]\.0\s+)', full_text)
+    raw_chunks= re.split(r'(?=\n[1-9]\.0\s+|\nPolicy ID:)', full_text)
 
-    # 4: Chunk Validation and Cleanup:
+    # 4: Chunk Validation, Cleanup and Inserting Policy Title on Each Chunk:
     clean_chunks= []
+    current_policy_title= 'Olist_Corporate_Policy'
+
     for chunk in raw_chunks:
         cleaned= chunk.strip()
-        if len(cleaned) > 50: # Filtering Out Microscopic Chunks (Blank Pages, Isolated Metadata)
+
+        if len(cleaned) < 50: # Filtering Out Microscopic Chunks (Blank Pages, Isolated Metadata)
+            continue
+
+        # Checking if Current Chunk contains a New Policy Title:
+        title_match= re.search(r'Title:\s*(.+)', cleaned) # regex search to extract the text right after "Title"
+        if title_match:
+            current_policy_title= title_match.group(1).strip()
             clean_chunks.append(cleaned)
+        else:
+            # if it's a numbered chunk without Title, adding parent title at the top:
+            enriched_chunk= f"Parent Document: {current_policy_title}\n\n{cleaned}"
+            clean_chunks.append(enriched_chunk)
 
     hub_logger.info(f"Successfully Parsed into {len(clean_chunks)} Semantic Policy Chunks!!")
     return clean_chunks
