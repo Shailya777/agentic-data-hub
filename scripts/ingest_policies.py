@@ -2,6 +2,7 @@ import os
 import sys
 import re
 import chromadb
+from chromadb.utils import embedding_functions
 from openai import OpenAI
 from pydantic import BaseModel, Field
 import PyPDF2
@@ -115,10 +116,23 @@ def ingest_to_chroma(chunks: list[str]):
     DB_PATH= os.path.abspath(os.path.join(os.path.dirname(__file__),"../data/vector_db"))
     chroma_client= chromadb.PersistentClient(path= DB_PATH)
 
+    # Embedding:
+    embedding= embedding_functions.OpenAIEmbeddingFunction(
+        api_key= os.getenv('OPENAI_API_KEY'),
+        model_name= 'text-embedding-3-small'
+    )
+
+    # Wiping the Collection if Already Exists:
+    try:
+        chroma_client.delete_collection(name= 'olist_corporate_policies')
+        hub_logger.info(f"Successfully Deleted Olist Corporate Policies Collection!")
+    except ValueError:
+        pass
 
     # Creating Collection for Company Policies in ChromaDB:
     collection= chroma_client.get_or_create_collection(
-        name= 'olist_corporate_policies'
+        name= 'olist_corporate_policies',
+        embedding_function= embedding
     )
 
     for i, chunk in enumerate(chunks):
