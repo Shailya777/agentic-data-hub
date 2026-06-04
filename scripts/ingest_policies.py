@@ -79,12 +79,36 @@ def extract_and_chunk_policies(pdf_path: str) -> list[str]:
     hub_logger.info(f"Successfully Parsed into {len(clean_chunks)} Semantic Policy Chunks!!")
     return clean_chunks
 
+def process_chunks_with_llm(chunk_text: str) -> ChunkMetadata:
+    """
+    Passes the semantic chunk to GPT-4o to generate a summary and header.
+    :param chunk_text: Chunk text.
+    :return: ChunkMetadata Object with Header and Summary for Chunk.
+    """
+
+    system_prompt= """
+    You are an expert Data Librarian. Read the following corporate policy text 
+    and generate a clear header and a brief summary. This metadata will be used 
+    to improve retrieval accuracy in a Vector Database.
+    """
+    response= openai.chat.completions.parse(
+        model= 'gpt-4o',
+        messages= [
+            {'role': 'system', 'content': system_prompt},
+            {'role': 'user', 'content': chunk_text}
+        ],
+        response_format= ChunkMetadata,
+        temperature= 0.0
+    )
+
+    return response.choices[0].message.parsed
+
 if __name__ == '__main__':
     pdf_path= 'C:\\Users\\shail\\PycharmProjects\\PythonProject\\agentic-data-hub\\data\\documents\\Olist_Corporate_Policies.pdf'
     if not os.path.exists(pdf_path):
         hub_logger.info(f'PDF File Not Found: {pdf_path}')
     else:
         test_chunks= extract_and_chunk_policies(pdf_path= pdf_path)
-        for chunk in test_chunks:
-            print(chunk)
-            print('\n\n')
+
+    res= process_chunks_with_llm(chunk_text= test_chunks[1])
+    print(res)
