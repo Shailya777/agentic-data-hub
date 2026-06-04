@@ -56,9 +56,10 @@ if run_button and user_query:
         # RAG Engine Trigger:
         if task.engine_name == 'RAG_ENGINE':
             hub_logger.info('Executing Vector RAG Engine.')
-            st.subheader('Qualitative Insights (Customer Reviews)')
+            st.subheader('Qualitative Insights')
             with st.spinner('Querying Vector Database and Synthesizing...'):
-                rag_response= execute_rag_query(user_query= task.sub_query, n_results= 10)
+                collection_to_query= task.target_collection or 'customer_reviews'
+                rag_response= execute_rag_query(user_query= task.sub_query, collection_name= collection_to_query,  n_results= 10)
                 st.write(rag_response)
             st.divider()
 
