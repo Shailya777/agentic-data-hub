@@ -63,7 +63,7 @@ def execute_rag_query(user_query: str, collection_name: str, n_results: int=5) -
             score= metadata_list[index]['score']
             context += f"--- Review {index+1} (Rating: {score} stars) ---\n{doc}\n\n"
         else:
-            context= f"--- Policy Document Excerpt {index+1} ---\n{doc}\n\n"
+            context += f"--- Policy Document Excerpt {index+1} ---\n{doc}\n\n"
 
 
     # Dynamic Prompting using Target Collection:
@@ -84,11 +84,17 @@ def execute_rag_query(user_query: str, collection_name: str, n_results: int=5) -
         
         CRITICAL RULES:
         1. AUTHORITATIVE TONE: Respond with clear, direct, and professional corporate language.
-        2. CITE METRICS: If the context contains specific operational thresholds (like percentages, days, or volumes), you must explicitly include those numbers in your answer.
-        3. FACTUAL BOUNDARIES: If the provided context does not contain the answer, explicitly state that the policy manual does not cover this scenario. Do not guess.
+        2. CITE METRICS: If the context contains specific operational thresholds, you must explicitly include those numbers.
+        3. FACTUAL DEDUCTION: You must apply the rules in the context to the user's specific scenario. If the policy states a limit of 50,000 and the user asks about 60,000, you must explicitly deduce that the user's package exceeds the limit and state the resulting penalty. 
+        4. BOUNDARIES: If the provided context does not contain the rules required to answer, explicitly state that the policy manual does not cover this scenario. Do not guess outside the provided rules.
         """
 
     user_prompt= f"User Query: {user_query}\n\nContext:\n{context}"
+
+    # ADD THIS LINE TO PEEK INSIDE THE BLACK BOX
+    #print(f"\n[DEBUG] Target Collection: {collection_name}")
+    #print(f"[DEBUG] User Sub-Query: {user_prompt}")
+    #print(f"[DEBUG] Retrieved Context:\n{context}\n")
 
     response= openai.chat.completions.create(
         model= 'gpt-4o',
