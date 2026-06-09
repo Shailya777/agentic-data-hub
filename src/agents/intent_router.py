@@ -27,6 +27,14 @@ class EngineTask(BaseModel):
         default= None,
         description= "If engine_name is RAG_ENGINE, this MUST be either 'customer_reviews' or 'olist_corporate_policies'. Otherwise, leave null."
     )
+    predictive_task: Optional[str]= Field(
+        default= None,
+        description= "If PREDICTIVE_ENGINE, strictly one of: 'revenue_forecast', 'inventory_forecast', or 'rfm_churn'. Otherwise null."
+    )
+    predictive_entity: Optional[str]= Field(
+        default= None,
+        description= "If PREDICTIVE_ENGINE, extract the product category (e.g., 'health_beauty') or customer_unique_id. Otherwise null."
+    )
 
 class RoutingResponse(BaseModel):
     """
