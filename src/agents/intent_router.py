@@ -67,7 +67,12 @@ def route_query(user_query: str) -> RoutingResponse:
     - RAG_ENGINE: For qualitative data, synthesizing text, and unstructured analysis.
         * If the user asks about customer sentiment, feedback, or complaints, set target_collection to 'customer_reviews'.
         * If the user asks about internal rules, SLAs, returns, or operations, set target_collection to 'olist_corporate_policies'.
-    - PREDICTIVE_ENGINE: For machine learning, probability scoring, and forecasting (e.g., predicting delivery delays, calculating customer churn risk, or forecasting future sales).
+    - PREDICTIVE_ENGINE: For machine learning forecasts and risk profiling.
+        Set predictive_task to 'delivery_delay' if predicting logistics, shipping delays, or late deliveries.
+        * Set predictive_task to 'revenue_forecast' if projecting future sales/revenue/dollars.
+        * Set predictive_task to 'inventory_forecast' if projecting stock/units/inventory/volume.
+        * Set predictive_task to 'rfm_churn' if analyzing risk profile or churn status for a customer ID.
+        * Extract the category (clean and lowercase, e.g., 'health_beauty'), customer ID or Order ID into predictive_entity.
     - UNKNOWN: If the query is completely unrelated to e-commerce.
 
     CRITICAL RULE: If a query requires multiple engines, create a separate task for each. 
@@ -75,7 +80,7 @@ def route_query(user_query: str) -> RoutingResponse:
     """
 
     response= openai.chat.completions.parse(
-        model= 'gpt-4o',
+        model= 'gpt-s4o',
         messages= [
             {'role': 'system', 'content': system_prompt},
             {'role': 'user', 'content': user_query},
