@@ -1,7 +1,7 @@
 import os
 import joblib
 import pandas as pd
-from datetime import datetime
+from datetime import timedelta
 
 class ForecastPredictor:
 
@@ -31,7 +31,7 @@ class ForecastPredictor:
         self.data_path= os.path.join(data_dir, 'forecasting_training_data.csv')
         self.latest_state= self._build_latest_state()
         print('Latest State Loaded Successfully')
-        print(self.latest_state)
+        #print(self.latest_state)
 
     def _build_latest_state(self) -> pd.DataFrame:
         """
@@ -56,7 +56,7 @@ class ForecastPredictor:
         weekly_df.rename(columns={
             'daily_revenue':'weekly_revenue',
             'units_sold':'weekly_units',
-            'sale_date':'week-ending_date'
+            'sale_date':'week_ending_date'
         }, inplace= True)
 
         # Calculating Current EWMA State (No shift() needed here because we WANT the current week's state)
@@ -69,9 +69,78 @@ class ForecastPredictor:
         )
 
         # Isolating Most Recent Week for Each Category:
-        latest_state= weekly_df.sort_values(by=['week-ending_date']).groupby('category').tail(1).copy()
+        latest_state= weekly_df.sort_values(by=['week_ending_date']).groupby('category').tail(1).copy()
         return latest_state.set_index('category')
 
-if __name__ == '__main__':
-    x= ForecastPredictor()
+    def predict(self, category: str, forecast_type: str= 'revenue') -> dict:
+        """
+        Takes a product category and a forecast type (revenue or inventory),
+        engineers the temporal features for next week, and returns the prediction.
+        :param category: Category to Predict Forecast for.
+        :param forecast_type: Revenue or Inventory.
+        :return: Dictionary of predictions.
+        """
 
+        category_clean= category.lower().replace(' ', '_')
+
+        # Fallback if Category Does not Exist:
+        if category_clean not in self.latest_state.index:
+            return {
+                'status': 'error',
+                'message': f"Category {category} not found in Historical Data."
+            }
+
+        # Fetching Latest stats for Category:
+        state= self.latest_state.loc[category_clean]
+        last_date= state['week_ending_date']
+        target_date= last_date + timedelta(days=7)
+
+        year= target_date.isocalendar().year
+        week_of_year= target_date.isocalendar().week
+
+        # Routing to Correct Model:
+        if forecast_type == 'revenue':
+            input_df= pd.DataFrame([{
+                'category': category_clean,
+                'year': year,
+                'week_of_year': week_of_year,
+                'lag_1_revenue': state['weekly_revenue'],
+                'ewma_4_revenue': state['ewma_4_revenue']
+            }])
+            prediction= self.rev_model.predict(input_df)[0]
+            return {
+                'status': 'success',
+                'category': category,
+                'target_date': target_date.strftime('%Y-%m-%d'),
+                'metric': 'Projected Revenue',
+                'value': f"${prediction:,.2f}"
+            }
+
+        elif forecast_type in ['inventory', 'units', 'stock']:
+            input_df= pd.DataFrame([{
+                'category': category_clean,
+                'year': year,
+                'week_of_year': week_of_year,
+                'lag_1_units': state['weekly_units'],
+                'ewma_4_units': state['ewma_4_units']
+            }])
+            prediction= self.inv_model.predict(input_df)[0]
+            return {
+                'status': 'success',
+                'category': category,
+                'target_date': target_date.strftime('%Y-%m-%d'),
+                'metric': 'Projected Unit Volume',
+                'value': f"{int(prediction)} units"
+            }
+
+        else:
+            return {
+                'status': 'error',
+                'message': "Invalid forecast type. Use 'revenue' or 'inventory'."
+            }
+
+if __name__ == '__main__':
+    # Test:
+    predictor= ForecastPredictor(models_dir= '../../../models', data_dir= '../../../data/processed')
+    print(predictor.predict(category='health_beauty', forecast_type='revenue'))
+    print(predictor.predict(category='health_beauty', forecast_type='inventory'))
