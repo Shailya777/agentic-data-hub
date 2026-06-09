@@ -20,5 +20,29 @@ class RFMPredictor:
         self.profiles= df.set_index('customer_unique_id')['risk_profile'].to_dict()
         print('RFM Profiles Loaded Successfully.')
 
+    def predict(self, customer_unique_id: str) -> dict:
+        """
+        Takes a customer_unique_id and returns their churn risk profile.
+        :param customer_unique_id: Unique customer ID.
+        :return: Dictionary of churn risk profile.
+        """
+        clean_id= customer_unique_id.strip()
+
+        if clean_id not in self.profiles:
+            return {
+                'status': 'error',
+                'message': f"Customer ID '{clean_id}' not found in the database."
+            }
+
+        risk_profile= self.profiles[clean_id]
+        return {
+            'status': 'success',
+            'customer_unique_id': clean_id,
+            'metric': 'Churn Risk Profile',
+            'value': risk_profile
+        }
+
 if __name__ == '__main__':
+    # Test:
     predictor= RFMPredictor(data_dir='../../../data/processed')
+    print(predictor.predict(customer_unique_id='248ffe10d632bebe4f7267f1f44844c9'))
