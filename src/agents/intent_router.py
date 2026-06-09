@@ -80,7 +80,7 @@ def route_query(user_query: str) -> RoutingResponse:
     """
 
     response= openai.chat.completions.parse(
-        model= 'gpt-s4o',
+        model= 'gpt-4o',
         messages= [
             {'role': 'system', 'content': system_prompt},
             {'role': 'user', 'content': user_query},
@@ -119,7 +119,10 @@ if __name__ == '__main__':
         "Which warehouses are likely to experience stock shortages next month based on current inventory movement?",
         "Compare average order value, return percentage, and customer lifetime value across loyalty tiers.",
         "Read support tickets from the last year and identify newly emerging technical issues that were previously uncommon.",
-        "Detect customers whose purchasing behavior significantly deviates from their normal buying patterns and summarize any related support complaints."
+        "Detect customers whose purchasing behavior significantly deviates from their normal buying patterns and summarize any related support complaints.",
+        "What is the revenue forecast for the Bed Bath & Table category next week, and what are the most common complaints in their recent 1-star reviews?",
+        "Check the churn risk profile for customer 248ffe10d632bebe4f7267f1f44844c9, and also calculate their total lifetime spend from their past orders.",
+        "Are there any predicted delivery delays for order 00010242fe8c5a6d1ba2dd792cb16214? Also, how many units of health and beauty products should we stock next month, and what is our corporate policy on issuing refunds for late shipping?"
     ]
 
     for query in test_queries:
