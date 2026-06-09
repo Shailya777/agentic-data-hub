@@ -102,8 +102,10 @@ def predict_delivery_delay(input_data: str | dict) -> dict:
 
         # Returning Results:
         return {
-            'status': 'High Risk of Delay' if is_high_risk else 'On Track',
-            'confidence': f'{delay_probability * 100:.1f}%',
+            'status': 'success',
+            'metric': 'Delivery Delay Prediction',
+            'delay_probability': f'{delay_probability * 100:.1f}%',
+            'risk_level': 'High Risk of Delay' if is_high_risk else 'On Track',
             'recommendation': 'Upgrade to Expedited Shipping.' if is_high_risk else 'Standard Processing.'
         }
 
