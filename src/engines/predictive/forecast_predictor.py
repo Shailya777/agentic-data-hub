@@ -142,5 +142,5 @@ class ForecastPredictor:
 if __name__ == '__main__':
     # Test:
     predictor= ForecastPredictor(models_dir= '../../../models', data_dir= '../../../data/processed')
-    print(predictor.predict(category='health_beauty', forecast_type='revenue'))
-    print(predictor.predict(category='health_beauty', forecast_type='inventory'))
+    print(predictor.predict(category='health beauty', forecast_type='revenue'))
+    print(predictor.predict(category='health beauty', forecast_type='inventory'))
