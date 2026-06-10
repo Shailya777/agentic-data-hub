@@ -130,40 +130,33 @@ if run_button and user_query:
         if task.engine_name == 'PREDICTIVE_ENGINE':
             hub_logger.info('Executing Predictive Analytics Inference Pipeline.')
             st.subheader('🔮 Predictive Analytics')
-            with st.spinner('Running Machine Learning Inference...'):
+            with st.spinner(f'Running Predictive Task: {task.predictive_task}...'):
+                st.markdown(f'**🧠 Predictive Engine Task:** {task.predictive_task}')
+
                 try:
-                    # Executing Predictive Task:
-                    predictive_result= route_predictive_task(sub_query= task.sub_query)
 
-                    # Components of Predictive Result:
-                    status= predictive_result.get('status', 'Unknown')
-                    confidence= predictive_result.get('confidence', 0.0)
-                    recommendation= predictive_result.get('recommendation', 'No action required.')
+                    # 1. Forecasting (Revenue or Inventory):
+                    if task.predictive_task in ['revenue_forecast', 'inventory_forecast']:
+                       forecast_type= 'revenue' if task.predictive_task == 'revenue_forecast' else 'inventory'
+                       category_entity= str(task.predictive_entity) if task.predictive_entity else ""
 
-                    # Converting Confidence Value to Float from Str:
-                    try:
-                        confidence_float = float(confidence)
-                        confidence_pct = f"{confidence_float * 100:.1f}%"
-                    except (ValueError, TypeError):
-                        # Fallback just in case the model returns a literal string like "N/A" or "85%"
-                        confidence_pct = str(confidence)
+                       prediction= forecast_predictor.predict(
+                           category= category_entity,
+                           forecast_type= forecast_type
+                       )
 
-                    # Rendering Results:
-                    col1, col2= st.columns([1,2])
+                       if prediction['status'] == 'success':
+                           st.metric(
+                               label= f"Projected 7-Day {forecast_type.title()} ({prediction['category'].title()})",
+                               value= prediction['value']
+                           )
+                           st.caption(f"**Target Date:** Week of {prediction['target_date']}")
+                       else:
+                           st.error(prediction.get('message', 'Forecast Failed.'))
 
-                    with col1:
-                        st.metric(label= 'Predicted Delay Risk', value= confidence_pct)
+                    # 2. RFM Churn Profiling:
+                    
 
-                    with col2:
-                        if status.lower() == 'delayed' or status.lower() == 'high risk':
-                            st.error(f'**Predicted Status:** {status.upper()} 🚨')
-                        elif status.lower() == 'on time' or status.lower() == 'low risk':
-                            st.success(f'**Predicted Status:** {status.upper()} ✅')
-                        else:
-                            st.warning(f'**Predicted Status:** {status.upper()}')
-
-                    # Displaying Actionable Recommendation:
-                    st.info(f'**Strategic Recommendation:** {recommendation}')
 
                 except Exception as e:
                     st.info(f'Inference Failed. Error: {e}')
