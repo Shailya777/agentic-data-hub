@@ -68,7 +68,7 @@ def route_query(user_query: str) -> RoutingResponse:
         * If the user asks about customer sentiment, feedback, or complaints, set target_collection to 'customer_reviews'.
         * If the user asks about internal rules, SLAs, returns, or operations, set target_collection to 'olist_corporate_policies'.
     - PREDICTIVE_ENGINE: For machine learning forecasts and risk profiling.
-        Set predictive_task to 'delivery_delay' if predicting logistics, shipping delays, or late deliveries.
+        * Set predictive_task to 'delivery_delay' if predicting logistics, shipping delays, or late deliveries.
         * Set predictive_task to 'revenue_forecast' if projecting future sales/revenue/dollars.
         * Set predictive_task to 'inventory_forecast' if projecting stock/units/inventory/volume.
         * Set predictive_task to 'rfm_churn' if analyzing risk profile or churn status for a customer ID.
