@@ -155,7 +155,25 @@ if run_button and user_query:
                            st.error(prediction.get('message', 'Forecast Failed.'))
 
                     # 2. RFM Churn Profiling:
-                    
+                    elif task.predictive_task == 'rfm_churn':
+                        customer_entity= str(task.predictive_entity) if task.predictive_entity else ""
+                        prediction= rfm_predictor.predict(
+                            customer_unique_id= customer_entity
+                        )
+
+                        if prediction['status'] == 'success':
+                            risk= prediction['value']
+                            if 'High Risk' in risk:
+                                st.error(f"🚨 **Retention Alert:** Customer status is **{risk}**.")
+                            elif 'VIP' in risk or 'Champion' in risk:
+                                st.success(f"👑 **VIP Profile:** Customer status is **{risk}**.")
+                            else:
+                                st.info(f"👤 **Customer Profile:** Customer status is **{risk}**.")
+
+                        else:
+                            st.error(prediction.get('message', 'RFM Lookup Failed.'))
+
+
 
 
                 except Exception as e:
