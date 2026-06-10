@@ -141,62 +141,80 @@ if run_button and user_query:
                        forecast_type= 'revenue' if task.predictive_task == 'revenue_forecast' else 'inventory'
                        category_entity= str(task.predictive_entity) if task.predictive_entity else ""
 
-                       prediction= forecast_predictor.predict(
-                           category= category_entity,
-                           forecast_type= forecast_type
-                       )
-
-                       if prediction['status'] == 'success':
-                           st.metric(
-                               label= f"Projected 7-Day {forecast_type.title()} ({prediction['category'].title()})",
-                               value= prediction['value']
-                           )
-                           st.caption(f"**Target Date:** Week of {prediction['target_date']}")
+                       # Guardrail if Category is "":
+                       if not category_entity or category_entity.lower() in ['null', 'none']:
+                           st.warning(
+                               f"⚠️ **Missing Information:** I need a specific product category to run a {forecast_type} forecast. Please refine your question to include a category (e.g., 'Health & Beauty').")
                        else:
-                           st.error(prediction.get('message', 'Forecast Failed.'))
+                           # Run the prediction only if we have a category
+                           prediction = forecast_predictor.predict(
+                               category=category_entity,
+                               forecast_type=forecast_type
+                           )
+
+                           if prediction['status'] == 'success':
+                               st.metric(
+                                   label=f"Projected 7-Day {forecast_type.title()} ({prediction['category'].title()})",
+                                   value=prediction['value']
+                               )
+                               st.caption(f"**Target Date:** Week of {prediction['target_date']}")
+                           else:
+                               st.error(prediction.get('message', 'Forecast failed.'))
 
                     # 2. RFM Churn Profiling:
                     elif task.predictive_task == 'rfm_churn':
                         customer_entity= str(task.predictive_entity) if task.predictive_entity else ""
-                        prediction= rfm_predictor.predict(
-                            customer_unique_id= customer_entity
-                        )
 
-                        if prediction['status'] == 'success':
-                            risk= prediction['value']
-                            if 'High Risk' in risk:
-                                st.error(f"🚨 **Retention Alert:** Customer status is **{risk}**.")
-                            elif 'VIP' in risk or 'Champion' in risk:
-                                st.success(f"👑 **VIP Profile:** Customer status is **{risk}**.")
-                            else:
-                                st.info(f"👤 **Customer Profile:** Customer status is **{risk}**.")
-
+                        # Guardrail if Customer ID is "":
+                        if not customer_entity or customer_entity.lower() in ['null', 'none']:
+                            st.warning(
+                                "⚠️ **Missing Information:** Please provide a specific Customer ID to check their churn risk profile.")
                         else:
-                            st.error(prediction.get('message', 'RFM Lookup Failed.'))
+                            prediction= rfm_predictor.predict(
+                                customer_unique_id= customer_entity
+                            )
+
+                            if prediction['status'] == 'success':
+                                risk= prediction['value']
+                                if 'High Risk' in risk:
+                                    st.error(f"🚨 **Retention Alert:** Customer status is **{risk}**.")
+                                elif 'VIP' in risk or 'Champion' in risk:
+                                    st.success(f"👑 **VIP Profile:** Customer status is **{risk}**.")
+                                else:
+                                    st.info(f"👤 **Customer Profile:** Customer status is **{risk}**.")
+
+                            else:
+                                st.error(prediction.get('message', 'RFM Lookup Failed.'))
 
                     # 3. Delivery Delay Prediction:
                     elif task.predictive_task == 'delivery_delay':
                         order_entity= str(task.predictive_entity) if task.predictive_entity else ""
-                        prediction= predict_delivery_delay(
-                            input_data= order_entity
-                        )
 
-                        if prediction['status'] == 'success':
-                            risk_level= prediction['risk_level']
-
-                            col1, col2= st.columns([1,2])
-                            with col1:
-                                st.metric(label= 'Predicted Delay Risk', value= prediction['delay_probability'])
-                            with col2:
-                                if 'High Risk' in risk_level:
-                                    st.error(f'**Predicted Status:** {risk_level.upper()} 🚨')
-                                    st.info(f"**Strategic Recommendation:** {prediction['recommendation']}")
-                                else:
-                                    st.success(f'**Predicted Status:** {risk_level.upper()} ✅')
-                                    st.info(f"**Strategic Recommendation:** {prediction['recommendation']}")
-
+                        # Guardrail if Order ID is "":
+                        if not order_entity or order_entity.lower() in ['null', 'none']:
+                            st.warning(
+                                "⚠️ **Missing Information:** Please provide a specific Order ID to predict delivery delays.")
                         else:
-                            st.error(prediction.get('error', 'Delivery Prediction Failed.'))
+                            prediction= predict_delivery_delay(
+                                input_data= order_entity
+                            )
+
+                            if prediction['status'] == 'success':
+                                risk_level= prediction['risk_level']
+
+                                col1, col2= st.columns([1,2])
+                                with col1:
+                                    st.metric(label= 'Predicted Delay Risk', value= prediction['delay_probability'])
+                                with col2:
+                                    if 'High Risk' in risk_level:
+                                        st.error(f'**Predicted Status:** {risk_level.upper()} 🚨')
+                                        st.info(f"**Strategic Recommendation:** {prediction['recommendation']}")
+                                    else:
+                                        st.success(f'**Predicted Status:** {risk_level.upper()} ✅')
+                                        st.info(f"**Strategic Recommendation:** {prediction['recommendation']}")
+
+                            else:
+                                st.error(prediction.get('error', 'Delivery Prediction Failed.'))
 
                     else:
                         st.warning(f"Unknown predictive task: {task.predictive_task}")
