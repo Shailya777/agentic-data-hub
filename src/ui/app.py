@@ -2,6 +2,9 @@ import sys
 import os
 import streamlit as st
 import pandas as pd
+from xgboost.spark.data import pred_contribs
+
+from src.engines.predictive import delivery_predictor
 
 # Adding Project Root to Python's Search Path:
 #print(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
@@ -173,15 +176,38 @@ if run_button and user_query:
                         else:
                             st.error(prediction.get('message', 'RFM Lookup Failed.'))
 
+                    # 3. Delivery Delay Prediction:
+                    elif task.predictive_task == 'deliver_delay':
+                        order_entity= str(task.predictive_entity) if task.predictive_entity else ""
+                        prediction= predict_delivery_delay(
+                            input_data= order_entity
+                        )
 
+                        if prediction['status'] == 'success':
+                            risk_level= prediction['risk_level']
 
+                            col1, col2= st.columns([1,2])
+                            with col1:
+                                st.metric(label= 'Predicted Delay Risk', value= prediction['delay_probability'])
+                            with col2:
+                                if 'High Risk' in risk_level:
+                                    st.error(f'**Predicted Status:** {risk_level.upper()} 🚨')
+                                    st.info(f"**Strategic Recommendation:** {prediction['recommendation']}")
+                                else:
+                                    st.success(f'**Predicted Status:** {risk_level.upper()} ✅')
+                                    st.info(f"**Strategic Recommendation:** {prediction['recommendation']}")
+
+                        else:
+                            st.error(prediction.get('error', 'Delivery Prediction Failed.'))
+
+                    else:
+                        st.warning(f"Unknown predictive task: {task.predictive_task}")
 
                 except Exception as e:
                     st.info(f'Inference Failed. Error: {e}')
 
             hub_logger.info('Query Execution lifecycle completed successfully.')
             st.divider()
-
 
         # Unknown Route:
         if task.engine_name == 'UNKNOWN':
