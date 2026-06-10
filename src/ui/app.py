@@ -12,9 +12,19 @@ from src.agents.intent_router import route_query
 from src.engines.sql_engine import execute_text_to_sql
 from src.engines.rag_engine import execute_rag_query
 from src.engines.predictive.router import route_predictive_task
+from src.engines.predictive.forecast_predictor import ForecastPredictor
+from src.engines.predictive.rfm_predictor import RFMPredictor
+from src.engines.predictive.delivery_predictor import predict_delivery_delay
 
 # Importing Logger:
 from src.utils.logger import hub_logger
+
+# Initializing Forecast and RFM Predictors:
+@st.cache_resource
+def load_predictors():
+    return ForecastPredictor(), RFMPredictor()
+
+forecast_predictor, rfm_predictor = load_predictors()
 
 # Page Config:
 st.set_page_config(
