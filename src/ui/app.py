@@ -19,21 +19,20 @@ from src.engines.predictive.delivery_predictor import predict_delivery_delay
 # Importing Logger:
 from src.utils.logger import hub_logger
 
-# Initializing Forecast and RFM Predictors:
-@st.cache_resource
-def load_predictors():
-    return (
-        ForecastPredictor(models_dir= 'models', data_dir= 'data/processed'),
-        RFMPredictor(data_dir='data/processed'))
-
-forecast_predictor, rfm_predictor = load_predictors()
-
 # Page Config:
 st.set_page_config(
     page_title= 'Agentic Data Hub',
     page_icon= '🧠',
     layout= 'wide',
 )
+
+# Initializing Forecast and RFM Predictors:
+@st.cache_resource
+def load_predictors():
+    return (
+        ForecastPredictor(models_dir= 'models', data_dir= 'data/processed'),
+        RFMPredictor(data_dir='data/processed'))
+forecast_predictor, rfm_predictor = load_predictors()
 
 st.title('📊 Agentic Data Intelligence Hub')
 st.markdown('Ask natural language questions. The Intent Router will autonomously dispatch your query to the correct database engines (SQL, Vector, or both).')
@@ -176,7 +175,7 @@ if run_button and user_query:
                             st.error(prediction.get('message', 'RFM Lookup Failed.'))
 
                     # 3. Delivery Delay Prediction:
-                    elif task.predictive_task == 'deliver_delay':
+                    elif task.predictive_task == 'delivery_delay':
                         order_entity= str(task.predictive_entity) if task.predictive_entity else ""
                         prediction= predict_delivery_delay(
                             input_data= order_entity
