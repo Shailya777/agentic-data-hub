@@ -2,9 +2,6 @@ import sys
 import os
 import streamlit as st
 import pandas as pd
-from xgboost.spark.data import pred_contribs
-
-from src.engines.predictive import delivery_predictor
 
 # Adding Project Root to Python's Search Path:
 #print(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
@@ -25,7 +22,9 @@ from src.utils.logger import hub_logger
 # Initializing Forecast and RFM Predictors:
 @st.cache_resource
 def load_predictors():
-    return ForecastPredictor(), RFMPredictor()
+    return (
+        ForecastPredictor(models_dir= 'models', data_dir= 'data/processed'),
+        RFMPredictor(data_dir='data/processed'))
 
 forecast_predictor, rfm_predictor = load_predictors()
 
