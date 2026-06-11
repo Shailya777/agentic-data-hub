@@ -4,6 +4,7 @@ import chromadb
 from chromadb.utils import embedding_functions
 from openai import OpenAI
 from dotenv import load_dotenv
+from rich.jupyter import display
 from tenacity import retry_if_result
 
 from src.utils.logger import hub_logger
@@ -23,7 +24,11 @@ embedding= embedding_functions.OpenAIEmbeddingFunction(
     model_name= 'text-embedding-3-small'
 )
 
-# Refining The User Query before Context Fetching:
+##############################################################################
+# Helper Functions #
+##############################################################################
+
+# 1. Refining The User Query before Context Fetching:
 def _expand_query(user_query: str) -> List[str]:
     """
     Generates synonymous, refined queries to widen the retrieval net.
@@ -54,7 +59,7 @@ def _expand_query(user_query: str) -> List[str]:
     hub_logger.info(f'Generated Search Queries: {queries}')
     return queries
 
-
+# 2. Retrieving Chunks from Vector DB using Original User Query and it's Refined Versions:
 def _retrieve_and_deduplicate(search_queries: List[str], collection, chunks_per_query: int= 5) -> List[Dict[str, Any]]:
     """
     Hits the vector DB with multiple queries and deduplicates the results.
@@ -84,7 +89,7 @@ def _retrieve_and_deduplicate(search_queries: List[str], collection, chunks_per_
     return raw_chunks
 
 
-# Re-Ranking Retrieved Chunks based on their relevance:
+# 3. Re-Ranking Retrieved Chunks based on their relevance:
 def _rerank_chunks(user_query: str, raw_chunks: List[Dict[str, Any]], top_k: int= 5) -> List[Dict[str, Any]]:
     """
     Uses an LLM to score and filter chunks based on actual relevance.
@@ -131,7 +136,7 @@ def _rerank_chunks(user_query: str, raw_chunks: List[Dict[str, Any]], top_k: int
         hub_logger.warning(f"Re-Ranking Failed. Falling back to raw chunks.\nError: {e}")
         return raw_chunks[:top_k]
 
-# Generating Answer to User Query using Re-Ranked Best Chunks:
+# 4. Generating Answer to User Query using Re-Ranked Best Chunks:
 def _synthesize_answer(user_query: str, best_chunks: List[Dict[str, Any]], collection_name: str) -> str:
     """
     Generates the final response of User Query based on the Ranked Retrieved Context.
@@ -187,6 +192,9 @@ def _synthesize_answer(user_query: str, best_chunks: List[Dict[str, Any]], colle
 
     return response.choices[0].message.content
 
+##############################################################################
+# Main Execution #
+##############################################################################
 
 # Executing RAG Query using Advanced RAG Pipeline:
 def execute_rag_query(user_query: str, collection_name: str, top_k: int= 5) -> str:
@@ -208,73 +216,25 @@ def execute_rag_query(user_query: str, collection_name: str, top_k: int= 5) -> s
     except Exception as e:
         return f"Error: Could not access vector collection '{collection_name}'. Has it been ingested? Details: {e}"
 
-    # Retrieving Relevant Documents from ChromaDB:
-    results= collection.query(
-        query_texts= [user_query],
-        n_results= n_results
-    )
-    retrieved_docs= results['documents'][0]
+    # Refining and Expanding User Query:
+    queries= _expand_query(user_query= user_query)
 
-    # Handling Different Metadata for Reviews and Policies Collection:
-    if collection_name == 'customer_reviews':
-        metadata_list= results['metadatas'][0]
-    else:
-        metadata_list= None
+    # Retrieving and De-Duplicating Chunks based on Multiple Queries:
+    raw_chunks= _retrieve_and_deduplicate(search_queries= queries,
+                                          collection= collection)
 
-    if not retrieved_docs:
+    if not raw_chunks:
         return f"No relevant information found in {collection_name} for this query."
 
-    # Formatting Context for LLM:
-    context= ""
-    for index, doc in enumerate(retrieved_docs):
-        if collection_name == 'customer_reviews':
-            score= metadata_list[index]['score']
-            context += f"--- Review {index+1} (Rating: {score} stars) ---\n{doc}\n\n"
-        else:
-            context += f"--- Policy Document Excerpt {index+1} ---\n{doc}\n\n"
+    # Re-ranking found Chunks based on Relevance:
+    best_chunks= _rerank_chunks(user_query= user_query, raw_chunks= raw_chunks, top_k= top_k)
 
+    if not best_chunks:
+        return "Information was found, but it was evaluated as not relevant to your specific question."
 
-    # Dynamic Prompting using Target Collection:
-    if collection_name == 'customer_reviews':
-        system_prompt= """
-        You are a Customer Experience Analyst for a Brazilian e-commerce company.
-        Answer the user's query using ONLY the provided customer review context.
-    
-        CRITICAL RULES:
-        1. MULTILINGUAL SUPPORT: The source reviews are in Portuguese. You MUST write your entire final analysis in English. If you quote a specific phrase, provide the English translation.
-        2. SEAMLESS SYNTHESIS: NEVER cite internal reference markers (e.g., "In Review 1", "According to Review 3"). Synthesize the insights naturally into a cohesive professional summary.
-        3. FACTUAL BOUNDARIES: If the provided context does not contain the answer, explicitly state that you do not have enough information. Do not guess.
-        """
-    else:
-        system_prompt= """
-        You are the Chief Operations Officer at Olist.
-        Answer the user's query regarding internal corporate policy using ONLY the provided document context.
-        
-        CRITICAL RULES:
-        1. AUTHORITATIVE TONE: Respond with clear, direct, and professional corporate language.
-        2. CITE METRICS: If the context contains specific operational thresholds, you must explicitly include those numbers.
-        3. FACTUAL DEDUCTION: You must apply the rules in the context to the user's specific scenario. If the policy states a limit of 50,000 and the user asks about 60,000, you must explicitly deduce that the user's package exceeds the limit and state the resulting penalty. 
-        4. BOUNDARIES: If the provided context does not contain the rules required to answer, explicitly state that the policy manual does not cover this scenario. Do not guess outside the provided rules.
-        """
-
-    user_prompt= f"User Query: {user_query}\n\nContext:\n{context}"
-
-    # ADD THIS LINE TO PEEK INSIDE THE BLACK BOX
-    #print(f"\n[DEBUG] Target Collection: {collection_name}")
-    #print(f"[DEBUG] User Sub-Query: {user_prompt}")
-    #print(f"[DEBUG] Retrieved Context:\n{context}\n")
-
-    response= openai.chat.completions.create(
-        model= 'gpt-4o',
-        messages= [
-            {'role': 'system', 'content': system_prompt},
-            {'role': 'user', 'content': user_prompt}
-        ],
-        temperature= 0.3, #Low temperature for factual synthesis, slight creativity for readability
-    )
-
-    return response.choices[0].message.content
-
+    # Generating Final Answer based on Found Context (De-Duplicated, Re-Ranked):
+    final_answer= _synthesize_answer(user_query= user_query, best_chunks= best_chunks, collection_name= collection_name)
+    return final_answer
 
 if __name__ == '__main__':
     # Testing Retrieval and Answer Synthesis for Customer Reviews:
@@ -287,5 +247,5 @@ if __name__ == '__main__':
     lst= _expand_query(user_query= 'What is the company policy for late delivery?')
     chunks= _retrieve_and_deduplicate(lst, collection= collection)
     best_chunks= _rerank_chunks(user_query= 'What is the company policy for late delivery?', raw_chunks= chunks, top_k= 5)
-    res= _synthesize_answer(user_query= 'What is the company policy for late delivery?', best_chunks= best_chunks)
-    print(res)
+    final_answer= _synthesize_answer(user_query= 'What is the company policy for late delivery?', best_chunks= best_chunks, collection_name= collection)
+    print(final_answer)
