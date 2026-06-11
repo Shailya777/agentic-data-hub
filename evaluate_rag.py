@@ -83,3 +83,67 @@ def evaluate_rag_triad(user_query: str, retrieved_context: str, generated_answer
     )
 
     return json.loads(response.choices[0].message.content)
+
+if __name__ == "__main__":
+    print('Starting RAG Evaluation...\n')
+    metrics= {
+        'context': 0,
+        'faithfulness': 0,
+        'answer': 0
+    }
+    num_questions= len(EVAL_QUESTIONS)
+
+    for i, item in enumerate(EVAL_QUESTIONS, start= 1):
+        query= item['query']
+        collection_name= item['collection']
+        print(f"[{i}/{num_questions}] Testing: '{query}'")
+
+        # Executing RAG Pipeline Steps to Capture Context:
+        # 1. Initializing Chroma Collection:
+        collection= chroma_client.get_collection(name= collection_name,
+                                                 embedding_function= embedding)
+        # 2. Refining User Query:
+        queries= _expand_query(user_query= query)
+
+        # 3. Fetching Chunks using Original and Refined Queries:
+        raw_chunks= _retrieve_and_deduplicate(search_queries= queries,
+                                              collection= collection,
+                                              chunks_per_query= 5)
+
+        # 4. Re-Ranking Chunks:
+        best_chunks= _rerank_chunks(user_query= query,
+                                    raw_chunks= raw_chunks,
+                                    top_k= 5)
+
+        # Formatting Context for LLM as a Judge:
+        context= "\n".join([c['text'] for c in best_chunks]) if best_chunks else "NO CONTEXT FOUND"
+
+        # Generating Answer:
+        if not best_chunks:
+            answer= 'No relevant information found.'
+        else:
+            answer= _synthesize_answer(user_query= query,
+                                       best_chunks= best_chunks,
+                                       collection_name= collection_name)
+
+        # Grading The Generated Answer:
+        eval_scores= evaluate_rag_triad(user_query= query,
+                                        retrieved_context= context,
+                                        generated_answer= answer)
+        metrics['context']+= eval_scores['context_relevance']
+        metrics['faithfulness']+= eval_scores['faithfulness']
+        metrics['answer']+= eval_scores['answer_relevance']
+
+        print(f"  ↳ Context Relevance: {eval_scores['context_relevance']}/10")
+        print(f"  ↳ Faithfulness:      {eval_scores['faithfulness']}/10")
+        print(f"  ↳ Answer Relevance:  {eval_scores['answer_relevance']}/10")
+        print(f"  ↳ Judge Notes:       {eval_scores['reasoning']}\n")
+
+    # Final Evaluation Card:
+    print("========================================")
+    print("FINAL RAG SCORECARD")
+    print("========================================")
+    print(f"Avg Context Relevance: {metrics['context'] / num_questions:.1f} / 10")
+    print(f"Avg Faithfulness:      {metrics['faithfulness'] / num_questions:.1f} / 10")
+    print(f"Avg Answer Relevance:  {metrics['answer'] / num_questions:.1f} / 10")
+    print("========================================\n")
