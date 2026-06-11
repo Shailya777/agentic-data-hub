@@ -129,6 +129,40 @@ def _rerank_chunks(user_query: str, raw_chunks: List[str], top_k: int= 5) -> Lis
         hub_logger.warning(f"Re-Ranking Failed. Falling back to raw chunks.\nError: {e}")
         return raw_chunks[:top_k]
 
+# Generating Answer to User Query using Re-Ranked Best Chunks:
+def _synthesize_answer(user_query: str, best_chunks: List[str]) -> str:
+    """
+    Generates the final response of User Query based on the Ranked Retrieved Context.
+    :param user_query: User's Query.
+    :param best_chunks: Chunks returned from re-ranking.
+    :return: Response of User's Query.
+    """
+    hub_logger.info('Synthesizing final answer...')
+
+    context= "\n\n".join([f"Review Excerpt: {chunk}" for chunk in best_chunks])
+
+    sys_prompt= """
+    You are a Senior Customer Experience Analyst for an e-commerce platform. 
+    Analyze the provided customer reviews and answer the user's question professionally.
+    
+    CRITICAL RULES:
+    1. Base your answer STRICTLY on the provided context. Do not use outside knowledge.
+    2. If the context does not contain the answer, say "The provided reviews do not contain enough information to answer this."
+    3. Do NOT mention "According to the context". Write naturally as if you did the research yourself.
+    4. Synthesize the findings across different languages into a single, cohesive English report.
+    """
+
+    response= openai.chat.completions.create(
+        model= 'gpt-4o',
+        messages= [
+            {'role': 'system', 'content': sys_prompt},
+            {'role': 'user', 'content': f"Context:\n{context}\n\nUser Question: {user_query}"}
+        ],
+        temperature= 0.3,
+    )
+
+    return response.choices[0].message.content
+
 # Executing RAG Query and Getting Most Relevant Reviews:
 def execute_rag_query(user_query: str, collection_name: str, n_results: int=5) -> str:
     """
@@ -228,4 +262,5 @@ if __name__ == '__main__':
     lst= _expand_query(user_query= 'What is the company policy for late delivery?')
     chunks= _retrieve_and_deduplicate(lst, collection= collection)
     best_chunks= _rerank_chunks(user_query= 'What is the company policy for late delivery?', raw_chunks= chunks, top_k= 5)
-    print(best_chunks)
+    res= _synthesize_answer(user_query= 'What is the company policy for late delivery?', best_chunks= best_chunks)
+    print(res)
