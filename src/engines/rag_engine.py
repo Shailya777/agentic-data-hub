@@ -80,6 +80,55 @@ def _retrieve_and_deduplicate(search_queries: List[str], collection, chunks_per_
     hub_logger.info(f"Retrieved {len(raw_chunks)} unique Chunks from Vector DB before Re-Ranking.")
     return raw_chunks
 
+
+# Re-Ranking Retrieved Chunks based on their relevance:
+def _rerank_chunks(user_query: str, raw_chunks: List[str], top_k: int= 5) -> List[str]:
+    """
+    Uses an LLM to score and filter chunks based on actual relevance.
+    :param user_query: Original User Query.
+    :param raw_chunks: Chunks retrieved from Vector DB using Original and Refined Uer Queries.
+    :param top_k: Number of top chunks to return after re-ranking.
+    :return: List of Chunks.
+    """
+    hub_logger.info('Re-Ranking Chunks by Relevance...')
+
+    rerank_prompt= f"""
+    You are an expert relevance evaluator. I will provide a user query and a list of text chunks.
+    Score each chunk from 0 to 10 based on how helpful it is for answering the user's query.
+    Output ONLY a comma-separated list of integer scores in the exact order the chunks are presented.
+    
+    User Query: {user_query}
+    
+    Chunks:
+    """
+
+    for idx, chunk in enumerate(raw_chunks):
+        rerank_prompt+= f"\n[{idx}] {chunk}\n"
+
+    response= openai.chat.completions.create(
+        model= 'gpt-4o-mini',
+        messages= [
+            {'role': 'user', 'content': rerank_prompt}
+        ],
+        temperature= 0.0,
+    )
+
+    try:
+        scores= [int(s.strip()) for s in response.choices[0].message.content.split(',')]
+        print(scores)
+        scored_chunks= list(zip(raw_chunks, scores))
+        scored_chunks.sort(key=lambda x: x[1], reverse= True)
+
+        # Leaving out chunks with scores of less or equal to 3:
+        best_chunks= [chunk for chunk, score in scored_chunks[:top_k] if score > 3]
+        hub_logger.info(f"Retained top {len(best_chunks)} Chunks for final response generation.")
+
+        return best_chunks
+
+    except Exception as e:
+        hub_logger.warning(f"Re-Ranking Failed. Falling back to raw chunks.\nError: {e}")
+        return raw_chunks[:top_k]
+
 # Executing RAG Query and Getting Most Relevant Reviews:
 def execute_rag_query(user_query: str, collection_name: str, n_results: int=5) -> str:
     """
@@ -178,4 +227,5 @@ if __name__ == '__main__':
     collection= chroma_client.get_collection('olist_corporate_policies', embedding_function= embedding)
     lst= _expand_query(user_query= 'What is the company policy for late delivery?')
     chunks= _retrieve_and_deduplicate(lst, collection= collection)
-    print(chunks)
+    best_chunks= _rerank_chunks(user_query= 'What is the company policy for late delivery?', raw_chunks= chunks, top_k= 5)
+    print(best_chunks)
