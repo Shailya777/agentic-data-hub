@@ -74,7 +74,10 @@ def _retrieve_and_deduplicate(search_queries: List[str], collection, chunks_per_
 
         for i, doc_id in enumerate(results['ids'][0]):
             if doc_id not in retrieved_chunks:
-                retrieved_chunks[doc_id]= results['documents'][0][i]
+                retrieved_chunks[doc_id]= {
+                    'text': results['documents'][0][i],
+                    'metadata': results['metadatas'][0][i] if results['metadatas'] else None,
+                }
 
     raw_chunks= list(retrieved_chunks.values())
     hub_logger.info(f"Retrieved {len(raw_chunks)} unique Chunks from Vector DB before Re-Ranking.")
@@ -115,7 +118,6 @@ def _rerank_chunks(user_query: str, raw_chunks: List[str], top_k: int= 5) -> Lis
 
     try:
         scores= [int(s.strip()) for s in response.choices[0].message.content.split(',')]
-        print(scores)
         scored_chunks= list(zip(raw_chunks, scores))
         scored_chunks.sort(key=lambda x: x[1], reverse= True)
 
@@ -163,16 +165,17 @@ def _synthesize_answer(user_query: str, best_chunks: List[str]) -> str:
 
     return response.choices[0].message.content
 
-# Executing RAG Query and Getting Most Relevant Reviews:
-def execute_rag_query(user_query: str, collection_name: str, n_results: int=5) -> str:
+
+# Executing RAG Query using Advanced RAG Pipeline:
+def execute_rag_query(user_query: str, collection_name: str, top_k: int= 5) -> str:
     """
-    Takes a natural language question, finds the most relevant documents in the specified collection,
-    and uses an LLM to synthesize a qualitative answer.
+    Executes the complete Advanced RAG pipeline.
     :param user_query: User's Query in natural language format.
     :param collection_name: Name of the collection to query.
-    :param n_results: Number of Closest Vectors to return while DB Search.
-    :return: Answer to User's Query Synthesized by LLM Using found Context from VectorDB.
+    :param top_k: Number of chunks to considered for final response after re-ranking.
+    :return: Answer to User's Query Synthesized by LLM Using Context from VectorDB.
     """
+    hub_logger.info(f"Starting Advanced RAG Pipeline for collection: {collection_name}")
 
     # Fetching requested Collection:
     try:
