@@ -4,6 +4,8 @@ import chromadb
 from chromadb.utils import embedding_functions
 from openai import OpenAI
 from dotenv import load_dotenv
+from tenacity import retry_if_result
+
 from src.utils.logger import hub_logger
 
 # Loading Environment Variables:
@@ -52,6 +54,31 @@ def _expand_query(user_query: str) -> List[str]:
     hub_logger.info(f'Generated Search Queries: {queries}')
     return queries
 
+
+def _retrieve_and_deduplicate(search_queries: List[str], collection, chunks_per_query: int= 5) -> List[str]:
+    """
+    Hits the vector DB with multiple queries and deduplicates the results.
+    :param search_queries: List of Original User Query with refined versions of it.
+    :param collection: Collection to query.
+    :param chunks_per_query: Number of Chunks to retrieve from Vector DB for each query.
+    :return: List of Chunks, de-duplicated.
+    """
+    hub_logger.info('Retrieving Context for all queries...')
+    retrieved_chunks= {}
+
+    for query in search_queries:
+        results= collection.query(
+            query_texts= [query],
+            n_results= chunks_per_query
+        )
+
+        for i, doc_id in enumerate(results['ids'][0]):
+            if doc_id not in retrieved_chunks:
+                retrieved_chunks[doc_id]= results['documents'][0][i]
+
+    raw_chunks= list(retrieved_chunks.values())
+    hub_logger.info(f"Retrieved {len(raw_chunks)} unique Chunks from Vector DB before Re-Ranking.")
+    return raw_chunks
 
 # Executing RAG Query and Getting Most Relevant Reviews:
 def execute_rag_query(user_query: str, collection_name: str, n_results: int=5) -> str:
@@ -148,5 +175,7 @@ if __name__ == '__main__':
     #print(execute_rag_query(user_query= test_query_1,
     #                       collection_name= 'customer_reviews',
     #                      n_results= 5))
-    lst= _expand_query(user_query= 'What are the most common complaints about delivery?')
-    print(lst)
+    collection= chroma_client.get_collection('olist_corporate_policies', embedding_function= embedding)
+    lst= _expand_query(user_query= 'What is the company policy for late delivery?')
+    chunks= _retrieve_and_deduplicate(lst, collection= collection)
+    print(chunks)
