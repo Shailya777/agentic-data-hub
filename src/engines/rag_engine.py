@@ -1,5 +1,5 @@
 import os
-from typing import List, Dict
+from typing import List, Dict, Any
 import chromadb
 from chromadb.utils import embedding_functions
 from openai import OpenAI
@@ -55,7 +55,7 @@ def _expand_query(user_query: str) -> List[str]:
     return queries
 
 
-def _retrieve_and_deduplicate(search_queries: List[str], collection, chunks_per_query: int= 5) -> List[str]:
+def _retrieve_and_deduplicate(search_queries: List[str], collection, chunks_per_query: int= 5) -> List[Dict[str, Any]]:
     """
     Hits the vector DB with multiple queries and deduplicates the results.
     :param search_queries: List of Original User Query with refined versions of it.
@@ -85,7 +85,7 @@ def _retrieve_and_deduplicate(search_queries: List[str], collection, chunks_per_
 
 
 # Re-Ranking Retrieved Chunks based on their relevance:
-def _rerank_chunks(user_query: str, raw_chunks: List[str], top_k: int= 5) -> List[str]:
+def _rerank_chunks(user_query: str, raw_chunks: List[Dict[str, Any]], top_k: int= 5) -> List[Dict[str, Any]]:
     """
     Uses an LLM to score and filter chunks based on actual relevance.
     :param user_query: Original User Query.
@@ -132,27 +132,49 @@ def _rerank_chunks(user_query: str, raw_chunks: List[str], top_k: int= 5) -> Lis
         return raw_chunks[:top_k]
 
 # Generating Answer to User Query using Re-Ranked Best Chunks:
-def _synthesize_answer(user_query: str, best_chunks: List[str]) -> str:
+def _synthesize_answer(user_query: str, best_chunks: List[Dict[str, Any]], collection_name: str) -> str:
     """
     Generates the final response of User Query based on the Ranked Retrieved Context.
     :param user_query: User's Query.
     :param best_chunks: Chunks returned from re-ranking.
+    :collection_name: Name of the Collection to query.
     :return: Response of User's Query.
     """
     hub_logger.info('Synthesizing final answer...')
 
-    context= "\n\n".join([f"Review Excerpt: {chunk}" for chunk in best_chunks])
+    # Formatting Context:
+    context= ""
+    for index, chunk in enumerate(best_chunks):
+        doc= chunk['text']
+        metadata= chunk['metadata']
 
-    sys_prompt= """
-    You are a Senior Customer Experience Analyst for an e-commerce platform. 
-    Analyze the provided customer reviews and answer the user's question professionally.
-    
-    CRITICAL RULES:
-    1. Base your answer STRICTLY on the provided context. Do not use outside knowledge.
-    2. If the context does not contain the answer, say "The provided reviews do not contain enough information to answer this."
-    3. Do NOT mention "According to the context". Write naturally as if you did the research yourself.
-    4. Synthesize the findings across different languages into a single, cohesive English report.
-    """
+        if collection_name == 'customer_reviews' and metadata and 'score' in metadata:
+            context += f"--- Review {index+1} (Rating: {metadata['score']} stars) ---\n{doc}\n\n"
+        else:
+            context += f"--- Document Excerpt {index+1} ---\n{doc}\n\n"
+
+    # Dynamic Prompting based on Collection Name:
+    if collection_name == 'customer_reviews':
+
+        sys_prompt= """
+        You are a Customer Experience Analyst for a Brazilian e-commerce company.
+        Answer the user's query using ONLY the provided customer review context.
+        CRITICAL RULES:
+        1. MULTILINGUAL SUPPORT: The source reviews are in Portuguese. Write your entire analysis in English. If quoting, translate it.
+        2. SEAMLESS SYNTHESIS: NEVER cite internal reference markers (e.g., "In Review 1").
+        3. FACTUAL BOUNDARIES: If the context does not contain the answer, explicitly state that you lack information. Do not guess.
+        """
+
+    else:
+        sys_prompt= """
+        You are the Chief Operations Officer at Olist.
+        Answer the user's query regarding internal corporate policy using ONLY the provided document context.
+        CRITICAL RULES:
+        1. AUTHORITATIVE TONE: Respond with clear, direct, and professional corporate language.
+        2. CITE METRICS: Explicitly include specific operational numbers or thresholds from the context.
+        3. FACTUAL DEDUCTION: Apply the policy rules to the user's scenario. 
+        4. BOUNDARIES: If the policy manual does not cover this scenario, explicitly state it.
+        """
 
     response= openai.chat.completions.create(
         model= 'gpt-4o',
