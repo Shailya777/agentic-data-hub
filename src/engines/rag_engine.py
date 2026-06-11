@@ -1,8 +1,10 @@
 import os
+from typing import List, Dict
 import chromadb
 from chromadb.utils import embedding_functions
 from openai import OpenAI
 from dotenv import load_dotenv
+from src.utils.logger import hub_logger
 
 # Loading Environment Variables:
 load_dotenv()
@@ -18,6 +20,37 @@ embedding= embedding_functions.OpenAIEmbeddingFunction(
     api_key= OPENAI_API_KEY,
     model_name= 'text-embedding-3-small'
 )
+
+# Refining The User Query before Context Fetching:
+def _expand_query(user_query: str) -> List[str]:
+    """
+    Generates synonymous, refined queries to widen the retrieval net.
+    :param user_query: User's Query in Natural Language format.
+    :return: List of Refined queries.
+    """
+    hub_logger.info('Expanding User Query...')
+
+    expansion_prompt= f"""
+    You are an AI data retrieval assistant. Your job is to take a user's query and generate 
+    TWO additional, refined, slightly different versions of it to help search a vector database.
+    Focus on synonyms and different ways a user might phrase the problem.
+    Output ONLY the two new queries, separated by a newline. Do not number them.
+    
+    Original Query: {user_query}
+    """
+
+    response= openai.chat.completions.create(
+        model= 'gpt-4o-mini',
+        messages= [
+            {'role': 'user', 'content': expansion_prompt}
+        ],
+        temperature= 0.7,
+    )
+
+    expanded= response.choices[0].message.content.strip().split('\n')
+    queries= [user_query] + [q.strip() for q in expanded if q.strip()]
+    hub_logger.info(f'Generated Search Queries: {queries}')
+    return queries
 
 
 # Executing RAG Query and Getting Most Relevant Reviews:
@@ -110,8 +143,10 @@ def execute_rag_query(user_query: str, collection_name: str, n_results: int=5) -
 
 if __name__ == '__main__':
     # Testing Retrieval and Answer Synthesis for Customer Reviews:
-    print('--- Testing Customer Reviews RAG ---')
-    test_query_1= 'What are the most common complaints about delivery?'
-    print(execute_rag_query(user_query= test_query_1,
-                            collection_name= 'customer_reviews',
-                            n_results= 5))
+    #print('--- Testing Customer Reviews RAG ---')
+    #test_query_1= 'What are the most common complaints about delivery?'
+    #print(execute_rag_query(user_query= test_query_1,
+    #                       collection_name= 'customer_reviews',
+    #                      n_results= 5))
+    lst= _expand_query(user_query= 'What are the most common complaints about delivery?')
+    print(lst)
