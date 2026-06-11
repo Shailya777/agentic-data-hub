@@ -106,7 +106,7 @@ def _rerank_chunks(user_query: str, raw_chunks: List[str], top_k: int= 5) -> Lis
     """
 
     for idx, chunk in enumerate(raw_chunks):
-        rerank_prompt+= f"\n[{idx}] {chunk}\n"
+        rerank_prompt+= f"\n[{idx}] {chunk['text']}\n"
 
     response= openai.chat.completions.create(
         model= 'gpt-4o-mini',
