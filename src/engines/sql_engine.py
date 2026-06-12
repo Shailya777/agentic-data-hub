@@ -47,6 +47,10 @@ Business Rules & Definitions:
 3. TRANSLATIONS: Always use product_category_name_translation.product_category_name_english for product categories. The base products table is in Portuguese.
 4. DELIVERY TIME: Calculated as the difference in days between order_purchase_timestamp and order_delivered_customer_date.
 5. ACTIVE SELLERS: A seller is only considered "active" if they have an associated order in the order_items table linked to a 'delivered' order.
+
+CRITICAL TIME-SERIES RULE: 
+The database is a static historical snapshot. You MUST assume the "current date" (today) is October 17, 2018. 
+If a user asks for "last month", "last quarter", or "recent" data, calculate the date ranges relative to 2018-10-17, NOT the actual present-day year.
 """
 
 class SQLResponse(BaseModel):
