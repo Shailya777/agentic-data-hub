@@ -89,22 +89,30 @@ if run_button and user_query:
 
             st.markdown("---")
 
-    # Parallel Execution (Handling Multi-Intent if Necessary):
+    # # Step 2: Looping and Executing Dispatched Tasks:
     for task in routing_result.tasks:
 
+        # ==========================================
         # RAG Engine Trigger:
+        # ==========================================
         if task.engine_name == 'RAG_ENGINE':
             hub_logger.info('Executing Vector RAG Engine.')
+
             st.subheader('Qualitative Insights')
             with st.spinner('Querying Vector Database and Synthesizing...'):
                 collection_to_query= task.target_collection or 'customer_reviews'
                 rag_response= execute_rag_query(user_query= task.sub_query, collection_name= collection_to_query,  top_k= 5)
-                st.write(rag_response)
+
+                # Rendering RAG Response:
+                st.info(rag_response)
             st.divider()
 
-    # SQL Engine Trigger:
+        # ==========================================
+        # SQL Engine Trigger:
+        # ==========================================
         elif task.engine_name == 'SQL_ENGINE':
             hub_logger.info('Executing SQL Engine.')
+
             st.subheader('Quantitative Insights (Structured Data)')
             with st.spinner('Generating SQL and Executing...'):
                 sql_result= execute_text_to_sql(user_query= task.sub_query)
@@ -114,20 +122,20 @@ if run_button and user_query:
                 # Displaying Result and Chart:
                 if df is not None and not df.empty and metadata is not None:
                     # Displaying Generated SQL for Varification:
-                    with st.expander('🔍 View AI-Generated SQL', expanded= False):
+                    with st.expander('🔍 View Generated SQL Statement', expanded= False):
                         st.code(metadata.sql_query, language= 'sql')
-                        st.caption(f'Chart logic selected: {metadata.chart_type.upper()} | X: {metadata.x_axis} | Y: {metadata.y_axis}')
+                        st.caption(f'Chart Engine Mapping: {metadata.chart_type.upper()} | X-Axis: {metadata.x_axis} | Y-Axis: {metadata.y_axis}')
 
-                    # Rendering Result Dataframe:
+                    # Rendering Result Dataframe and Chart:
                     col1, col2= st.columns([1,2])
 
                     with col1:
-                        st.subheader('Results')
+                        st.markdown('🔢 Results')
                         st.dataframe(data= df,
                              use_container_width= True)
 
                     with col2:
-                        st.subheader('Visualization')
+                        st.markdown('📉 Dynamic Visualization')
 
                         # Deciding Chart Type based on Metadata:
                         if metadata.needs_chart and metadata.chart_type is not None:
@@ -148,10 +156,10 @@ if run_button and user_query:
                                 st.error(f'Failed to render chart. Please check axis mapping. Error: {e}')
 
                         else:
-                            st.info('This Data does not require chart (e.g., single metric return).')
+                            st.info('Scalar or single-metric matrix returned. Chart rendering skipped.')
 
                 else:
-                    st.error('The engine failed to return data. Check the terminal logs for database or self-correction errors.')
+                    st.error('The deterministic SQL execution layer failed to return results. Please review system console logs.')
 
             st.divider()
 
