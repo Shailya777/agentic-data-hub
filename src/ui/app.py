@@ -163,12 +163,14 @@ if run_button and user_query:
 
             st.divider()
 
-        # Predictive Engine Trigger (Placeholder):
+        # ==========================================
+        # Predictive Engine Trigger:
+        # ==========================================
         if task.engine_name == 'PREDICTIVE_ENGINE':
             hub_logger.info('Executing Predictive Analytics Inference Pipeline.')
-            st.subheader('🔮 Predictive Analytics')
-            with st.spinner(f'Running Predictive Task: {task.predictive_task}...'):
-                st.markdown(f'**🧠 Predictive Engine Task:** {task.predictive_task}')
+
+            st.subheader('🔮 Machine Learning Predictive Inference')
+            with st.spinner(f'Initializing Predictive Pipeline: {task.predictive_task}...'):
 
                 try:
 
@@ -180,22 +182,22 @@ if run_button and user_query:
                        # Guardrail if Category is "":
                        if not category_entity or category_entity.lower() in ['null', 'none']:
                            st.warning(
-                               f"⚠️ **Missing Information:** I need a specific product category to run a {forecast_type} forecast. Please refine your question to include a category (e.g., 'Health & Beauty').")
+                               f"⚠️ **Missing Entity Context:** Running a {forecast_type} forecast requires an explicit product category target (e.g., 'Health & Beauty').")
                        else:
                            # Run the prediction only if we have a category
                            prediction = forecast_predictor.predict(
-                               category=category_entity,
-                               forecast_type=forecast_type
+                               category= category_entity,
+                               forecast_type= forecast_type
                            )
 
                            if prediction['status'] == 'success':
                                st.metric(
-                                   label=f"Projected 7-Day {forecast_type.title()} ({prediction['category'].title()})",
-                                   value=prediction['value']
+                                   label= f"Projected 7-Day {forecast_type.title()} ({prediction['category'].title()})",
+                                   value= prediction['value']
                                )
                                st.caption(f"**Target Date:** Week of {prediction['target_date']}")
                            else:
-                               st.error(prediction.get('message', 'Forecast failed.'))
+                               st.error(prediction.get('message', 'Forecast pipeline exception occurred.'))
 
                     # 2. RFM Churn Profiling:
                     elif task.predictive_task == 'rfm_churn':
@@ -204,7 +206,7 @@ if run_button and user_query:
                         # Guardrail if Customer ID is "":
                         if not customer_entity or customer_entity.lower() in ['null', 'none']:
                             st.warning(
-                                "⚠️ **Missing Information:** Please provide a specific Customer ID to check their churn risk profile.")
+                                "⚠️ **Missing Entity Context:** Please specify a unique Customer ID string to run behavioral churn profiling.")
                         else:
                             prediction= rfm_predictor.predict(
                                 customer_unique_id= customer_entity
@@ -213,11 +215,11 @@ if run_button and user_query:
                             if prediction['status'] == 'success':
                                 risk= prediction['value']
                                 if 'High Risk' in risk:
-                                    st.error(f"🚨 **Retention Alert:** Customer status is **{risk}**.")
+                                    st.error(f"🚨 **Retention Team Alert:** Behavioral status flagged as **{risk}**.")
                                 elif 'VIP' in risk or 'Champion' in risk:
-                                    st.success(f"👑 **VIP Profile:** Customer status is **{risk}**.")
+                                    st.success(f"👑 **High-Value Account:** Behavioral status mapped as **{risk}**.")
                                 else:
-                                    st.info(f"👤 **Customer Profile:** Customer status is **{risk}**.")
+                                    st.info(f"👤 **Customer Behavioral Profile:** Mapped as **{risk}**.")
 
                             else:
                                 st.error(prediction.get('message', 'RFM Lookup Failed.'))
@@ -229,7 +231,7 @@ if run_button and user_query:
                         # Guardrail if Order ID is "":
                         if not order_entity or order_entity.lower() in ['null', 'none']:
                             st.warning(
-                                "⚠️ **Missing Information:** Please provide a specific Order ID to predict delivery delays.")
+                                "⚠️ **Missing Entity Context:** Please provide a valid Order ID token to calculate logistical risk probabilities.")
                         else:
                             prediction= predict_delivery_delay(
                                 input_data= order_entity
@@ -240,27 +242,28 @@ if run_button and user_query:
 
                                 col1, col2= st.columns([1,2])
                                 with col1:
-                                    st.metric(label= 'Predicted Delay Risk', value= prediction['delay_probability'])
+                                    st.metric(label= 'Calculated Logistical Risk Probability', value= prediction['delay_probability'])
                                 with col2:
                                     if 'High Risk' in risk_level:
-                                        st.error(f'**Predicted Status:** {risk_level.upper()} 🚨')
-                                        st.info(f"**Strategic Recommendation:** {prediction['recommendation']}")
+                                        st.error(f'**Logistical Classification:** {risk_level.upper()} 🚨')
                                     else:
-                                        st.success(f'**Predicted Status:** {risk_level.upper()} ✅')
-                                        st.info(f"**Strategic Recommendation:** {prediction['recommendation']}")
+                                        st.success(f'**Logistical Classification:** {risk_level.upper()} ✅')
+
+                                    st.info(f"**Operational Mitigation Recommendation:** {prediction['recommendation']}")
 
                             else:
-                                st.error(prediction.get('error', 'Delivery Prediction Failed.'))
+                                st.error(prediction.get('error', 'Logistical risk prediction pipeline failed.'))
 
                     else:
                         st.warning(f"Unknown predictive task: {task.predictive_task}")
 
                 except Exception as e:
-                    st.info(f'Inference Failed. Error: {e}')
+                    st.info(f'Inference Failed. Details: {e}')
 
-            hub_logger.info('Query Execution lifecycle completed successfully.')
             st.divider()
 
+        # ==========================================
         # Unknown Route:
+        # ==========================================
         if task.engine_name == 'UNKNOWN':
-            st.error("❓ I couldn't determine how to answer this question. Please ask a question related to e-commerce revenue or customer reviews.")
+            st.error("❓ **Unmapped Query Boundary:** The orchestrator could not confidently route this request. Please constrain questions to e-commerce metrics, qualitative customer feedback, or predictive logistical pipelines.")
