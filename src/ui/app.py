@@ -67,16 +67,27 @@ with st.sidebar:
 if run_button and user_query:
     hub_logger.info('Initializing query execution lifecycle.')
 
-    #Intent-Routing:
+    # Step 1: Intent-Routing Execution:
     with st.spinner('Analyzing Intent and Decomposing Query (if necessary)...'):
         routing_result= route_query(user_query= user_query)
 
-    with st.expander("Router Logic", expanded= True):
-        st.caption(f"**Reasoning: {routing_result.reasoning}")
-        for task in routing_result.tasks:
-            st.info(f"**Engine:** {task.engine_name} | **Sub-Query:** {task.sub_query}")
+    # Trace Console (Collapsed):
+    with st.expander("🛠️ View Agentic Reasoning Trace & Execution Plan", expanded= False):
+        st.markdown("### 🗺️ Orchestrator Execution Plan")
+        st.markdown(f"**Core Reasoning:** *{routing_result.reasoning}*")
+        st.markdown("---")
 
-    st.divider()
+        for i, task in enumerate(routing_result.tasks, start= 1):
+            st.markdown(f"**Task {i} Destination:** `{task.engine_name}`")
+            st.code(f"Sub-Query: {task.sub_query}", language= "text")
+
+            if task.target_collection:
+                st.caption(f"Target Vector Collection: `{task.target_collection}`")
+
+            if task.predictive_task:
+                st.caption(f"Predictive Pipeline Task: `{task.predictive_task}` | Target Entity: `{task.predictive_entity}`")
+
+            st.markdown("---")
 
     # Parallel Execution (Handling Multi-Intent if Necessary):
     for task in routing_result.tasks:
