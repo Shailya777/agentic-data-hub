@@ -4,7 +4,6 @@ import streamlit as st
 import pandas as pd
 
 # Adding Project Root to Python's Search Path:
-#print(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
 # Importing Intent-Routing, SQL-Engine, RAG-Engine Module:
@@ -35,16 +34,34 @@ def load_predictors():
 forecast_predictor, rfm_predictor = load_predictors()
 
 st.title('📊 Agentic Data Intelligence Hub')
-st.markdown('Ask natural language questions. The Intent Router will autonomously dispatch your query to the correct database engines (SQL, Vector, or both).')
+st.caption('Enterprise Analytics Platform powered by Orchestrated Language Models & Predictive Intelligence')
+st.markdown("""
+    This intelligent interface automatically parses natural language questions and dispatches them to specialized backend engines. 
+    It seamlessly manages structured relational databases (**SQL**), unstructured textual feedback (**Vector RAG**), and advanced predictive pipelines.
+    """)
 st.divider()
 
 # Sidebar for User Input:
 with st.sidebar:
-    st.header('Query Engine')
-    user_query= st.text_area('Ask a business question:',
-                             placeholder= 'e.g., What was our total revenue last quarter, and what are customers complaining about regarding delivery?')
-    run_button= st.button('Generate Insights',
-                          type= 'primary')
+    st.header('📥 Query Workspace')
+    user_query= st.text_area('Ask an analytical or predictive question:',
+                             placeholder= 'e.g., What was our total revenue last quarter, and what are customers complaining about regarding delivery?',
+                             height= 150)
+
+    # Showcasing System Capabilities in Sidebar:
+    st.markdown('---')
+    st.markdown('### 💡 Supported Capabilities')
+    st.markdown(
+        """
+        - **Quantitative:** Revenue, sales metrics, and growth trends via dynamic Text-to-SQL.
+        - **Qualitative:** Multilingual translation and semantic customer review analysis via Advanced RAG.
+        - **Predictive:** 7-day forecasting, RFM customer churn scoring, and delivery risk analysis.
+        """
+    )
+
+    run_button= st.button('Run Core Orchestrator',
+                      type= 'primary',
+                      use_container_width= True)
 
 # Main Execution Logic:
 if run_button and user_query:
