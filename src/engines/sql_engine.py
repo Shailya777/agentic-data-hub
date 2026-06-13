@@ -1,10 +1,11 @@
 import os
 import pandas as pd
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.engine import URL
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 from openai import OpenAI
+import streamlit as st
 
 # Loading Environment Variables
 load_dotenv()
@@ -19,11 +20,29 @@ engine_url= URL.create(
 )
 db_engine = create_engine(engine_url)
 
+# Getting the MAX Order Date from DB to use as Current Date and caching it:
+@st.cache_data(ttl= 86400) # Caching for 24 hours
+def get_current_db_date():
+    """
+    Fetches the latest order date to anchor the LLM's temporal awareness.
+    :return: Maximum of Order Date (YYYY-MM-DD)
+    """
+    try:
+        with db_engine.connect() as conn:
+            result= conn.execute(text("SELECT MAX(order_date) FROM orders"))
+            max_date= result.scalar()
+            return str(max_date).split(" ")[0] # Returning just "YYYY-MM_DD"
+    except Exception as e:
+        return "2018-10-17" # Fallback to Hard-Coded MAX Order Date
+
+# Fetching The Cached Current Date:
+current_db_date= get_current_db_date()
+
 # Initializing OpenAI API
 openai = OpenAI(api_key= os.getenv('OPENAI_API_KEY'))
 
 # Defining SQL Schema for Context for LLM:
-SCHEMA_CONTEXT= """
+SCHEMA_CONTEXT= f"""
 The database 'ecommerce_db' contains the following tables:
 1. customers (customer_id, customer_unique_id, customer_zip_code_prefix, customer_city, customer_state)
 2. orders (order_id, customer_id, order_status, order_purchase_timestamp, order_approved_at, order_delivered_carrier_date, order_delivered_customer_date, order_estimated_delivery_date)
@@ -49,8 +68,8 @@ Business Rules & Definitions:
 5. ACTIVE SELLERS: A seller is only considered "active" if they have an associated order in the order_items table linked to a 'delivered' order.
 
 CRITICAL TIME-SERIES RULE: 
-The database is a static historical snapshot. You MUST assume the "current date" (today) is October 17, 2018. 
-If a user asks for "last month", "last quarter", or "recent" data, calculate the date ranges relative to 2018-10-17, NOT the actual present-day year.
+The "current date" (today) for this database is exactly {current_db_date}.
+If a user asks for "last month", "last quarter", or "recent" data, calculate the date ranges strictly relative to {current_db_date}, NOT the actual present-day year
 """
 
 class SQLResponse(BaseModel):
