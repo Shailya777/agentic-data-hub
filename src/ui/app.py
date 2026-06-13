@@ -3,6 +3,13 @@ import os
 import streamlit as st
 import pandas as pd
 
+# Page Config:
+st.set_page_config(
+    page_title= 'Agentic Data Hub',
+    page_icon= '🧠',
+    layout= 'wide',
+)
+
 # Adding Project Root to Python's Search Path:
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
@@ -17,13 +24,6 @@ from src.engines.predictive.delivery_predictor import predict_delivery_delay
 
 # Importing Logger:
 from src.utils.logger import hub_logger
-
-# Page Config:
-st.set_page_config(
-    page_title= 'Agentic Data Hub',
-    page_icon= '🧠',
-    layout= 'wide',
-)
 
 # Initializing Forecast and RFM Predictors:
 @st.cache_resource
