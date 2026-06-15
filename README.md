@@ -5,7 +5,45 @@ This project abandons fragile prompt-chaining in favor of strict, schema-enforce
 ![Python](https://img.shields.io/badge/Python-3.10-blue) ![Streamlit](https://img.shields.io/badge/Streamlit-1.30-red) ![XGBoost](https://img.shields.io/badge/XGBoost-2.0-green) ![OpenAI](https://img.shields.io/badge/OpenAI-GPT4o-black)
 
 ## 🏗️ System Architecture
-*(Mermaid.js Flowchart - yet to be made)*
+```mermaid
+graph TD
+    %% Styling
+    classDef ui fill:#1e1e1e,stroke:#00d2ff,stroke-width:2px,color:#fff
+    classDef orchestrator fill:#3e2723,stroke:#ff5252,stroke-width:2px,color:#fff
+    classDef engine fill:#1b5e20,stroke:#69f0ae,stroke-width:2px,color:#fff
+    classDef db fill:#01579b,stroke:#40c4ff,stroke-width:2px,color:#fff
+
+    User((User Input)) -->|Natural Language| UI[Streamlit UI]:::ui
+    
+    subgraph Multi-Agent Orchestrator
+        UI --> IntentRouter{Intent Router<br>gpt-4o}:::orchestrator
+        IntentRouter -->|Decomposes Query| Schema1[RoutingResponse Schema<br>List of EngineTasks]:::orchestrator
+    end
+
+    Schema1 -->|SQL_ENGINE| SQLEngine[Text-to-SQL Engine]:::engine
+    Schema1 -->|RAG_ENGINE| RAGEngine[Zero-Shot RAG Engine]:::engine
+    Schema1 -->|PREDICTIVE_ENGINE| PredRouter{Predictive Router<br>gpt-4o}:::orchestrator
+
+    subgraph Analytical Engines
+        %% SQL Execution
+        SQLEngine <-->|Self-Correcting Loop<br>Max Retries: 3| MySQL[(Local MySQL<br>Olist DB)]:::db
+        SQLEngine -->|SQLResponse Schema| ChartMeta[Dynamic Charting<br>Metadata]:::engine
+        
+        %% RAG Execution
+        RAGEngine <-->|text-embedding-3-small| Chroma[(ChromaDB<br>Policies & Reviews)]:::db
+        
+        %% Predictive Execution
+        PredRouter -->|PredictiveRoutingDecision<br>OPERATIONAL / SIMULATION| ModelSelect[Target Selector]:::orchestrator
+        ModelSelect -->|DELAY| DelayModel[XGBoost Delay Model]:::engine
+        ModelSelect -->|CHURN| ChurnModel[RFM Churn Model]:::engine
+        ModelSelect -->|FORECAST| ForecastModel[Time-Series Forecast]:::engine
+    end
+    
+    ChartMeta --> UI
+    MySQL -->|DataFrame| UI
+    Chroma -->|Summarized Context| UI
+    DelayModel & ChurnModel & ForecastModel -->|JSON Results| UI
+```
 
 ## 🧠 Core Orchestration & Engines
 
