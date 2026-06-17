@@ -17,7 +17,7 @@ openai = OpenAI(api_key= os.getenv('OPENAI_API_KEY'))
 
 class SyntheticTestCase(BaseModel):
     """
-
+    Pydantic Schema for RAG Test Case generation.
     """
     query: str = Field(
         description= 'A distinct, natural language user query in English testing the source context.'
@@ -31,10 +31,10 @@ class SyntheticTestCase(BaseModel):
 
 def generate_case_from_chunk(chunk_text: str, collection_name: str) -> SyntheticTestCase:
     """
-
-    :param chunk_text:
-    :param collection_name:
-    :return:
+    Generates a test case from given chunk and collection name in SyntheticTestCase Pydantic Schema form.
+    :param chunk_text: Text from the Retrieved Chunk.
+    :param collection_name: Collection Name from where the Chunk was retrieved.
+    :return: RAG Test Case in SyntheticTestCase Pydantic Schema form.
     """
     system_prompt= f"""
     You are an expert Machine Learning QA Engineer generating a golden test set for a RAG pipeline.
