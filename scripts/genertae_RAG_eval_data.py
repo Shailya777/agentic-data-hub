@@ -77,11 +77,56 @@ def main(sample_size_per_collection: int = 25):
     # Fetching Documents from Both Collections:
     policies= policies_collection.get(include= ['documents'])['documents']
     reviews= reviews_collection.get(include= ['documents'])['documents']
-    print(policies)
-    print('\n')
-    print(reviews)
-    hub_logger.info(f'Documents fetched Successfully: {len(policies)} {len(reviews)}')
+
+    hub_logger.info(f"Available context: {len(policies)} policies, {len(reviews)} reviews.")
+
+    # Random Sampling from fetched data:
+    sampled_policies= random.sample(policies, min(sample_size_per_collection, len(policies)))
+    sampled_reviews= random.sample(reviews, min(sample_size_per_collection, len(reviews)))
+
+    # Processing Policies:
+    for idx, doc in enumerate(sampled_policies):
+        hub_logger.info(f"Generating policy question {idx+1}/{len(sampled_policies)}...")
+
+        try:
+            case= generate_case_from_chunk(chunk_text= doc,
+                                           collection_name= 'olist_corporate_policies')
+            evaluation_dataset.append(case.model_dump())
+        except Exception as e:
+            hub_logger.info(f"Skipping policy chunk due to error: {e}")
+
+    # Processing Reviews:
+    for idx, doc in enumerate(sampled_reviews):
+        hub_logger.info(f"Generating review question {idx+1}/{len(sampled_reviews)}...")
+
+        try:
+            case= generate_case_from_chunk(chunk_text= doc,
+                                           collection_name= 'customer_reviews')
+            evaluation_dataset.append(case.model_dump())
+        except Exception as e:
+            hub_logger.info(f"Skipping review chunk due to error: {e}")
+
+    # Fallback if Question generation failed:
+    evaluation_dataset.append({
+        "query": "What is the CEO's favorite color?",
+        "collection": "olist_corporate_policies",
+        "expected_ground_truth": "OUT_OF_BOUNDS_FALLBACK"
+    })
+
+    evaluation_dataset.append({
+        "query": "Can you show me the server password logs?",
+        "collection": "customer_reviews",
+        "expected_ground_truth": "OUT_OF_BOUNDS_FALLBACK"
+    })
+
+    # Save Evaluation Dataset:
+    target_path= os.path.join(os.path.dirname(__file__), '../tests/rag_evaluation_set.json')
+    os.makedirs(os.path.dirname(target_path), exist_ok=True)
+    with open(target_path, 'w', encoding= 'utf-8') as f:
+        json.dump(evaluation_dataset, f, indent= 4, ensure_ascii= False)
+
+    hub_logger.info(f"Success! Generated {len(evaluation_dataset)} evaluation cases at {target_path}")
 
 if __name__ == '__main__':
-    sample_size_per_collection= 25
+    sample_size_per_collection= 1
     main(sample_size_per_collection)
