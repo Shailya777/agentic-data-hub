@@ -128,5 +128,5 @@ def main(sample_size_per_collection: int = 25):
     hub_logger.info(f"Success! Generated {len(evaluation_dataset)} evaluation cases at {target_path}")
 
 if __name__ == '__main__':
-    sample_size_per_collection= 25
+    sample_size_per_collection= 24 #24 per collection + 2 OOB Questions= 50
     main(sample_size_per_collection)

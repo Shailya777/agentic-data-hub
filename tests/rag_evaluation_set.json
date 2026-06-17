@@ -1,253 +1,243 @@
 [
     {
-        "query": "What are the consequences for a vendor if they do not resolve a defect claim within the stipulated time frame according to Olist's policy?",
+        "query": "What are the requirements for Olist when transferring Brazilian consumer data internationally?",
         "collection": "olist_corporate_policies",
-        "expected_ground_truth": "If a vendor fails to resolve a valid defect claim within the SLA, Olist will unilaterally process a full refund to the customer's original payment method and charge the vendor's ledger, plus a 10% administrative fee."
+        "expected_ground_truth": "Olist can transfer data internationally using global cloud providers only to jurisdictions recognized by the ANPD as having adequate protection or with binding Standard Contractual Clauses. Additionally, primary databases with critical Brazilian consumer data should be hosted within Brazil when possible."
     },
     {
-        "query": "What are the response and resolution times for different support tiers in Olist's customer service SLAs?",
+        "query": "What is the policy ID for the Vendor Service Level Agreement related to shipping and fulfillment at Olist?",
         "collection": "olist_corporate_policies",
-        "expected_ground_truth": "For Tier 1 (General Support), the first response time is less than 4 hours and time to resolution is less than 24 hours. For Tier 2 (Specialized/Escalated), the first response time is less than 2 hours and time to resolution is less than 48 hours. For Tier 3 (Legal/Executive), the first response time is less than 1 hour, and the time to resolution is variable based on case complexity."
+        "expected_ground_truth": "The policy ID for the Vendor Service Level Agreement related to shipping and fulfillment at Olist is OLIST-SLA-2026-001."
     },
     {
-        "query": "What is the procedure for handling 1-star reviews that allege fraud or harm according to the corporate policies?",
+        "query": "What is the main objective of the Vendor SLA for Shipping & Fulfillment on the Olist marketplace?",
         "collection": "olist_corporate_policies",
-        "expected_ground_truth": "If a 1-star review involves allegations of fraud, counterfeit goods, or physical harm, the ticket is immediately escalated to Tier 3 for further investigation, and the associated vendor account is temporarily frozen."
+        "expected_ground_truth": "The main objective of the Vendor SLA for Shipping & Fulfillment on the Olist marketplace is to guarantee a frictionless, predictable, and high-quality post-purchase experience for the end consumer, while ensuring compliance with Brazilian consumer protection laws."
     },
     {
-        "query": "What is the central location for Olist's nationwide distribution network?",
+        "query": "What specific legal article does Olist's return policy comply with to ensure customer rights in online purchases?",
         "collection": "olist_corporate_policies",
-        "expected_ground_truth": "The primary macro-hubs located in the state of São Paulo (SP) serve as the arterial center for Olist's nationwide distribution."
+        "expected_ground_truth": "Olist's return policy complies with Article 49 of the Brazilian Consumer Defense Code, which pertains to the 'Right of Regret' for online purchases."
     },
     {
-        "query": "What is the primary purpose of the OLIST-RET-2026-002 policy?",
+        "query": "What measures does Olist implement to ensure the privacy of customer data in their analytics platforms?",
         "collection": "olist_corporate_policies",
-        "expected_ground_truth": "The primary purpose of the OLIST-RET-2026-002 policy is to outline the procedures and conditions under which customers can return products and receive refunds, ensuring compliance with legal standards and enhancing customer satisfaction."
+        "expected_ground_truth": "Olist ensures the privacy of customer data in their analytics platforms by enforcing strict anonymization protocols, tokenizing sensitive identifiers, and restricting access to unmasked PII through role-based access control and audit trails."
     },
     {
-        "query": "What are the consequences for a vendor if their Dispatch Delay Rate exceeds the specified threshold in the Olist Vendor Service Level Agreement?",
+        "query": "What is the policy ID for the customer return and refund policy at Olist?",
+        "collection": "olist_corporate_policies",
+        "expected_ground_truth": "The policy ID for the customer return and refund policy at Olist is OLIST-RET-2026-002."
+    },
+    {
+        "query": "How does Olist's customer support system prioritize and route customer queries after a purchase?",
+        "collection": "olist_corporate_policies",
+        "expected_ground_truth": "Olist's customer support system uses algorithmic triage to prioritize and route customer queries based on sentiment analysis, particularly focusing on post-purchase public reviews."
+    },
+    {
+        "query": "What are the response and resolution times for different tiers of customer support as per the standard SLAs for inbound queries?",
+        "collection": "olist_corporate_policies",
+        "expected_ground_truth": "For Tier 1 (General Support), the first response time is less than 4 hours and the time to resolution is less than 24 hours. For Tier 2 (Specialized/Escalated), the first response time is less than 2 hours and the time to resolution is less than 48 hours. For Tier 3 (Legal/Executive), the first response time is less than 1 hour and the time to resolution is variable based on case complexity."
+    },
+    {
+        "query": "What is the maximum time frame in which Olist processes refunds for Pix or Boleto transactions after a return is verified?",
+        "collection": "olist_corporate_policies",
+        "expected_ground_truth": "For purchases made via Pix or Boleto, refunds will be deposited directly into the customer's linked Mercado Pago or bank account within 72 business hours of return verification."
+    },
+    {
+        "query": "What is the timeframe for Olist to process data subject requests under the LGPD, and what are the notification requirements in case of a data breach?",
+        "collection": "olist_corporate_policies",
+        "expected_ground_truth": "Olist processes data subject requests under the LGPD within 15 calendar days. In case of a significant data breach, the DPO must notify the ANPD and affected individuals within 48 hours."
+    },
+    {
+        "query": "What are the packaging and volumetric restrictions imposed by Olist for parcels in their shipping service?",
+        "collection": "olist_corporate_policies",
+        "expected_ground_truth": "Olist imposes a maximum package volume of 50,000 cm³, with the longest side not exceeding 100 cm and the sum of dimensions not exceeding 200 cm. The gross weight must not exceed 30 kg. Packaging must use double-walled corrugated cardboard for items over 5 kg, and void fill must be recyclable materials."
+    },
+    {
+        "query": "What is the maximum allowable package volume for SKUs in Olist warehouses, and what happens if this limit is exceeded?",
+        "collection": "olist_corporate_policies",
+        "expected_ground_truth": "Olist warehouses enforce a maximum package volume of 50,000 cm³ for SKUs. If this limit is exceeded, the items are rejected at the receiving dock and returned to the vendor at their expense."
+    },
+    {
+        "query": "What are the conditions and procedures for a customer in Brazil to return a product purchased online under the Right of Regret policy?",
+        "collection": "olist_corporate_policies",
+        "expected_ground_truth": "Under Brazilian law, customers can return a product within seven days of receipt without penalty, and the process is automated. The merchant bears the cost of return shipping, and the product must be returned with all original manuals, accessories, and unviolated seals."
+    },
+    {
+        "query": "How does Olist handle 5-star reviews to enhance vendor performance and marketing strategies?",
+        "collection": "olist_corporate_policies",
+        "expected_ground_truth": "Olist handles 5-star reviews by sending an automated, personalized 'Thank You' email to the customer, contributing the review data to the vendor's 'Olist Premium' eligibility score, and flagging detailed reviews for potential use in marketing, subject to customer consent."
+    },
+    {
+        "query": "What is the policy ID for the Customer Support Escalation Matrix in the Olist corporate policies?",
+        "collection": "olist_corporate_policies",
+        "expected_ground_truth": "The policy ID for the Customer Support Escalation Matrix is OLIST-CS-2026-004."
+    },
+    {
+        "query": "What is the policy ID for Olist's guidelines on data privacy and cross-border information handling?",
+        "collection": "olist_corporate_policies",
+        "expected_ground_truth": "The policy ID for Olist's guidelines on data privacy and cross-border information handling is OLIST-DP-2026-005."
+    },
+    {
+        "query": "What is the service level agreement for shipments from São Paulo to Rio de Janeiro and Minas Gerais?",
+        "collection": "olist_corporate_policies",
+        "expected_ground_truth": "The service level agreement for interstate transfer on the route from São Paulo to Rio de Janeiro and Minas Gerais is strictly 24 hours."
+    },
+    {
+        "query": "What are the consequences outlined in the Vendor Service Level Agreement for a vendor who repeatedly fails to meet the shipping deadlines?",
+        "collection": "olist_corporate_policies",
+        "expected_ground_truth": "Repeated failures to meet shipping deadlines result in financial penalties equivalent to 15% of the delayed merchandise value to fund customer appeasement, as outlined in Tier 2 infractions."
+    },
+    {
+        "query": "What are the consequences for a vendor if their Dispatch Delay Rate exceeds the allowed threshold over a 30-day period according to Olist's policies?",
         "collection": "olist_corporate_policies",
         "expected_ground_truth": "If a vendor's Dispatch Delay Rate exceeds 8% over a 30-day period, their account will be subjected to immediate administrative review and potential suspension."
     },
     {
-        "query": "What is the policy ID for the Customer Support Escalation Matrix in the Customer Success and Quality Assurance departments?",
+        "query": "How does Olist manage the logistics of merchandise handling and distribution across its facilities as it scales its operations?",
         "collection": "olist_corporate_policies",
-        "expected_ground_truth": "The policy ID for the Customer Support Escalation Matrix in the Customer Success and Quality Assurance departments is OLIST-CS-2026-004."
+        "expected_ground_truth": "Olist manages the physical handling, storage, and movement of merchandise within its fulfillment centers and cross-docking hubs by emphasizing standardized logistics, centralizing its network around primary macro-hubs located in São Paulo, which serve as the main center for nationwide distribution."
     },
     {
-        "query": "What is the main objective of the Vendor SLA for Shipping & Fulfillment in the Olist marketplace?",
+        "query": "What action is taken if there is a discrepancy greater than 0.5% between physical inventory counts and the Olist E-commerce Data Hub records?",
         "collection": "olist_corporate_policies",
-        "expected_ground_truth": "The primary objective of the Vendor SLA for Shipping & Fulfillment is to guarantee a frictionless, predictable, and high-quality post-purchase experience for the end consumer, thereby protecting the Olist brand equity and maintaining regulatory compliance with national consumer protection laws."
+        "expected_ground_truth": "If there is a discrepancy exceeding 0.5% between physical counts and WMS data, it triggers an immediate secondary audit by the Shift Supervisor and may lead to a localized inventory freeze until reconciled."
     },
     {
-        "query": "Who is responsible for enforcing LGPD compliance at Olist, and what does this entail?",
+        "query": "What is the procedure for handling 1-star reviews that involve allegations of fraud or harm according to the Olist corporate policy?",
         "collection": "olist_corporate_policies",
-        "expected_ground_truth": "The Chief Data Officer (CDO) and the designated Data Protection Officer (DPO) are responsible for enforcing LGPD compliance at Olist, which entails overseeing the collection, processing, storage, and cross-border transfer of all Personally Identifiable Information (PII)."
+        "expected_ground_truth": "If a 1-star review involves allegations of fraud, counterfeit goods, or physical harm, the case is escalated to Tier 3 for further investigation, and the associated vendor account is temporarily frozen."
     },
     {
-        "query": "When was the last update made to the Olist Data Hub's internal corporate policy manual?",
+        "query": "Who is responsible for enforcing the LGPD compliance mandate at Olist?",
         "collection": "olist_corporate_policies",
-        "expected_ground_truth": "The last update to the Olist Data Hub's internal corporate policy manual was made in June 2026."
+        "expected_ground_truth": "The Chief Data Officer (CDO) and the designated Data Protection Officer (DPO) are responsible for enforcing the LGPD compliance mandate at Olist."
     },
     {
-        "query": "What actions are taken if there is a discrepancy in inventory counts at Olist's warehouse?",
+        "query": "What is the policy ID for the guidelines on warehouse inventory management and orientation at Olist?",
         "collection": "olist_corporate_policies",
-        "expected_ground_truth": "If there is a discrepancy exceeding 0.5% between physical counts and WMS data, it triggers an immediate secondary audit by the Shift Supervisor. Persistent variances will result in a localized freeze of the affected inventory zone until reconciled."
+        "expected_ground_truth": "The policy ID for the guidelines on warehouse inventory management and orientation at Olist is OLIST-WH-2026-003."
     },
     {
-        "query": "What is the policy ID for the Vendor Service Level Agreement related to shipping and fulfillment in Olist's corporate policies?",
-        "collection": "olist_corporate_policies",
-        "expected_ground_truth": "The policy ID for the Vendor Service Level Agreement related to shipping and fulfillment is OLIST-SLA-2026-001."
-    },
-    {
-        "query": "How does Olist ensure the privacy of raw customer data in its analytics platforms?",
-        "collection": "olist_corporate_policies",
-        "expected_ground_truth": "Olist ensures the privacy of raw customer data by enforcing strict anonymization protocols, tokenizing sensitive identifiers, and restricting access to unmasked PII to authorized personnel only, governed by Role-Based Access Control and logged with immutable audit trails."
-    },
-    {
-        "query": "What are the conditions and responsibilities for merchants and customers under the Right of Regret policy in Brazil for digital transactions?",
-        "collection": "olist_corporate_policies",
-        "expected_ground_truth": "Under Brazilian federal law, customers can cancel a digital transaction and return the merchandise without penalty within seven days of receipt. The merchant bears the cost of return shipping, and the process is automated through the Olist self-service portal. The product must be returned with all original manuals, accessories, and unviolated manufacturer seals if applicable."
-    },
-    {
-        "query": "What is the protocol for notifying authorities and individuals in the event of a data breach at Olist?",
-        "collection": "olist_corporate_policies",
-        "expected_ground_truth": "In the event of a data breach at Olist that poses a significant risk, the DPO must notify the ANPD and affected individuals within 48 hours of confirmation."
-    },
-    {
-        "query": "What is the policy ID for managing warehouse inventory and employee orientation in the logistics department at Olist?",
-        "collection": "olist_corporate_policies",
-        "expected_ground_truth": "The policy ID for managing warehouse inventory and employee orientation in the logistics department at Olist is OLIST-WH-2026-003."
-    },
-    {
-        "query": "What is the timeline for processing refunds for purchases made via Pix or Boleto Bancário according to Olist's policies?",
-        "collection": "olist_corporate_policies",
-        "expected_ground_truth": "Refunds for purchases made via Pix or Boleto Bancário will be deposited directly into the customer's linked Mercado Pago or bank account within 72 business hours of return verification."
-    },
-    {
-        "query": "What is the service level agreement for inventory transfers from São Paulo to Rio de Janeiro and Minas Gerais?",
-        "collection": "olist_corporate_policies",
-        "expected_ground_truth": "The service level agreement for inventory transfers from São Paulo to Rio de Janeiro and Minas Gerais is strictly 24 hours."
-    },
-    {
-        "query": "What are the specific packaging and volumetric limitations for parcels processed through Olist's shipping tiers, and what are the consequences of non-compliance?",
-        "collection": "olist_corporate_policies",
-        "expected_ground_truth": "The packaging and volumetric limitations for parcels processed through Olist's shipping tiers include a maximum volume of 50,000 cm³, the longest side of any package must not exceed 100 cm, the sum of the dimensions must not exceed 200 cm, and the gross weight must not exceed 30 kg. Non-compliance leads to carrier rejection and penalties."
-    },
-    {
-        "query": "What are the consequences outlined in the Vendor Service Level Agreement for a vendor who repeatedly fails to meet the SLA delay thresholds?",
-        "collection": "olist_corporate_policies",
-        "expected_ground_truth": "The consequences for repeatedly failing to meet the SLA delay thresholds include financial penalties equivalent to 15% of the delayed merchandise value to fund customer appeasement."
-    },
-    {
-        "query": "What specific legal article does Olist's return policy comply with to ensure customers' rights for online purchases?",
-        "collection": "olist_corporate_policies",
-        "expected_ground_truth": "Olist's return policy complies with Article 49 of the Brazilian Consumer Defense Code, which concerns the 'Right of Regret' for online purchases."
-    },
-    {
-        "query": "How does Olist handle 5-star reviews, and what impact do they have on vendor scores and marketing efforts?",
-        "collection": "olist_corporate_policies",
-        "expected_ground_truth": "Olist handles 5-star reviews by automatically sending a personalized 'Thank You' email to the customer. These reviews contribute to vendor scores for 'Olist Premium' eligibility and may be used in marketing materials with customer consent."
-    },
-    {
-        "query": "What is the maximum package volume allowed for SKUs in Olist warehouses, and what happens if this limit is exceeded?",
-        "collection": "olist_corporate_policies",
-        "expected_ground_truth": "Olist warehouses enforce a maximum package volume of 50,000 cm³ for SKUs. If this limit is exceeded, the items will be rejected at the receiving dock and returned to the vendor at their expense."
-    },
-    {
-        "query": "What are the conditions under which Olist can transfer consumer data internationally, and where should critical Brazilian consumer data ideally be stored?",
-        "collection": "olist_corporate_policies",
-        "expected_ground_truth": "Olist can transfer data internationally to jurisdictions recognized by the ANPD as having adequate protection or with binding Standard Contractual Clauses. Critical Brazilian consumer data should ideally be stored in data centers within Brazil whenever possible."
-    },
-    {
-        "query": "How does the Olist Customer Support system prioritize customer queries and reviews?",
-        "collection": "olist_corporate_policies",
-        "expected_ground_truth": "The Olist Customer Support system uses algorithmic triage to route queries based on sentiment analysis, particularly focusing on post-purchase public reviews."
-    },
-    {
-        "query": "What did the customer mention about the delivery timing of their order?",
+        "query": "What complaint did a customer have about the authenticity of a product they received?",
         "collection": "customer_reviews",
-        "expected_ground_truth": "The customer mentioned that their order arrived well before the delivery deadline."
+        "expected_ground_truth": "The customer complained that the product they received was counterfeit and not as advertised."
     },
     {
-        "query": "What is the customer's opinion about the product mentioned in the review?",
+        "query": "What is the content of the message in the customer review titled 'Title'?",
         "collection": "customer_reviews",
-        "expected_ground_truth": "The customer expressed a positive opinion about the product, describing it as good."
+        "expected_ground_truth": "The message content in the customer review titled 'Title' is 'Ok.'."
     },
     {
-        "query": "What issue did the customer experience with the delivery of their product, despite its quality?",
+        "query": "What feedback did the customer give about the condition of the product they received?",
         "collection": "customer_reviews",
-        "expected_ground_truth": "The customer received the product well in advance and found it to be excellent, but the delivery by Correios resulted in the box being dropped and causing a break on the side."
+        "expected_ground_truth": "The customer stated that the product arrived in excellent condition and everything was fine."
     },
     {
-        "query": "What did the customer say about the condition and delivery time of the product they received?",
+        "query": "What feedback did the customer give regarding the delivery and condition of the product?",
         "collection": "customer_reviews",
-        "expected_ground_truth": "The customer stated that they received the product in great condition and within the expected delivery time."
+        "expected_ground_truth": "The customer stated that the product was delivered on time and in perfect condition."
     },
     {
-        "query": "What feedback did the customer give about the delivery time of the product?",
+        "query": "What feedback did the customer give about their experience with the service?",
         "collection": "customer_reviews",
-        "expected_ground_truth": "The customer stated that the product was delivered within the established timeframe."
+        "expected_ground_truth": "The customer stated that everything was as expected."
     },
     {
-        "query": "What issue did the customer face with the delivery of their purchases and how was it handled?",
+        "query": "What did the customer say about the delivery time and initial usage of the product?",
         "collection": "customer_reviews",
-        "expected_ground_truth": "The customer faced a problem with delayed deliveries for two purchases, one with an expected delivery date of February 15 and the other on February 21. The issue was not addressed at any point, despite the customer calling to complain on February 23."
+        "expected_ground_truth": "The customer mentioned that the product arrived on time and they are already using it."
     },
     {
-        "query": "What is the sentiment expressed in the customer review titled 'Ótimo'?",
+        "query": "What did the customer say about the reliability and condition of the product they received?",
         "collection": "customer_reviews",
-        "expected_ground_truth": "The sentiment expressed in the customer review titled 'Ótimo' is positive."
+        "expected_ground_truth": "The customer stated that everything arrived correctly, sealed, and within the deadline, indicating reliability."
     },
     {
-        "query": "What feedback did the customer provide regarding the delay in delivery?",
+        "query": "What was the customer's experience with the delivery timeline for their purchase made on November 27, 2017?",
         "collection": "customer_reviews",
-        "expected_ground_truth": "The customer expressed dissatisfaction due to not receiving any follow-up or satisfaction response regarding the delay in delivery."
+        "expected_ground_truth": "The customer did not receive their purchase by December 31, 2017, despite having made the purchase on November 27, 2017, indicating a delay in delivery."
     },
     {
-        "query": "What issue did the customer face with their order according to the review?",
+        "query": "What feedback did the customer give about the company's treatment of consumers?",
         "collection": "customer_reviews",
-        "expected_ground_truth": "The customer did not receive the gloves they ordered and instead received an unattractive watch without prior consultation."
+        "expected_ground_truth": "The customer stated that the company fulfilled and respected the consumer."
     },
     {
-        "query": "What is the sentiment of the customer review titled 'otimo'?",
+        "query": "Did the delivery of the product meet the expected timeline according to the customer review?",
         "collection": "customer_reviews",
-        "expected_ground_truth": "The sentiment of the customer review titled 'otimo' is positive, as the customer expressed that they liked the product very much."
+        "expected_ground_truth": "The delivery of the product was completed on time as stated in the customer review."
     },
     {
-        "query": "What is the sentiment of the customer towards the products they purchased from this store?",
+        "query": "What did the customer say about the delivery time of their product?",
         "collection": "customer_reviews",
-        "expected_ground_truth": "The customer expresses a positive sentiment towards the products they purchased from this store, stating they are satisfied."
+        "expected_ground_truth": "The customer stated that the product arrived before the expected delivery date."
     },
     {
-        "query": "How did the customer feel about the packaging and delivery time of their order?",
+        "query": "What feedback did the customer provide regarding the delivery time of their order?",
         "collection": "customer_reviews",
-        "expected_ground_truth": "The customer was very satisfied with the packaging and the delivery time, as they mentioned it was well-packaged and delivered on time."
+        "expected_ground_truth": "The customer mentioned that their order arrived earlier than expected."
     },
     {
-        "query": "What issue did the customer face with the delivery of their clock?",
+        "query": "What did the customer express about their expectations in their review?",
         "collection": "customer_reviews",
-        "expected_ground_truth": "The customer faced an issue where the clock was delivered without an invoice or a manual."
+        "expected_ground_truth": "The customer expressed that the product exceeded their expectations."
     },
     {
-        "query": "What feedback did the customer give regarding the delivery time?",
+        "query": "What is the customer's complaint regarding the response time from the company?",
         "collection": "customer_reviews",
-        "expected_ground_truth": "The customer praised the delivery time, stating 'Ótimo prazo de entrega!' which translates to 'Great delivery time!' in English."
+        "expected_ground_truth": "The customer is complaining about not receiving any response through their phone or email up to the present moment."
     },
     {
-        "query": "What are the features of the curtain mentioned in the customer review?",
+        "query": "What feedback did the customer give about the product and its delivery time?",
         "collection": "customer_reviews",
-        "expected_ground_truth": "The curtain is well-finished, blocks light without making the room completely dark, is easy to install, and the fabric is beautiful."
+        "expected_ground_truth": "The customer stated that the product is excellent and it arrived on time."
     },
     {
-        "query": "What is the customer's initial impression of the product despite it not being installed yet?",
+        "query": "What is the customer's overall rating for the product mentioned in their review?",
         "collection": "customer_reviews",
-        "expected_ground_truth": "The customer has an initial impression that the product appears to be of good quality, even though it has not been installed yet."
+        "expected_ground_truth": "The customer gave the product a 5-star rating."
     },
     {
-        "query": "What feedback did the customer give about the delivery speed and product quality for Indico?",
+        "query": "What is the title of the customer review that indicates trustworthiness in the seller?",
         "collection": "customer_reviews",
-        "expected_ground_truth": "The customer praised the delivery speed as fast and described the product as perfect."
+        "expected_ground_truth": "The title of the customer review indicating trustworthiness in the seller is 'VENDEDOR CONFIÁVEL'. "
     },
     {
-        "query": "What issue did the customer experience with the delivery of their items?",
+        "query": "What issue did the customer face when ordering multiple products from the same store?",
         "collection": "customer_reviews",
-        "expected_ground_truth": "The customer experienced an issue where they received one item on one day and the other item on the following day, expressing that both items could have been delivered together."
+        "expected_ground_truth": "The customer ordered multiple products from the same store to pay only one shipping fee, but only one out of three products was delivered."
     },
     {
-        "query": "What issue did a customer face when purchasing items from the collection?",
+        "query": "What issue did the customer have with the product photo in their review?",
         "collection": "customer_reviews",
-        "expected_ground_truth": "The customer purchased two hammocks but only received one, and they are awaiting a resolution."
+        "expected_ground_truth": "The customer complained that the photo was misleading, particularly noting that the synthetic grass was much sparser than depicted in the photo."
     },
     {
-        "query": "What was the customer's experience regarding the delivery time of the product?",
+        "query": "What issue did the customer face with the product they received?",
         "collection": "customer_reviews",
-        "expected_ground_truth": "The customer mentioned that the delivery occurred before the expected date."
+        "expected_ground_truth": "The customer received a product that did not match the photo and was particularly dissatisfied because they received a sealing rubber valued at 3.00, which they considered a mockery."
     },
     {
-        "query": "What feedback did the customer give about the website?",
+        "query": "What aspect of the delivery service is highlighted in the customer review titled 'Super recomendo'?",
         "collection": "customer_reviews",
-        "expected_ground_truth": "The customer loved the website and highly recommends it to friends, stating that the company deserves congratulations."
+        "expected_ground_truth": "The customer review titled 'Super recomendo' highlights the speed of the delivery service."
     },
     {
-        "query": "What feedback did the customer provide in their review?",
+        "query": "What is the sentiment expressed in the customer review titled 'Parabensss'?",
         "collection": "customer_reviews",
-        "expected_ground_truth": "The customer provided positive feedback by stating 'tudo certo,' which translates to 'all good' or 'everything is fine' in English."
+        "expected_ground_truth": "The sentiment expressed in the customer review titled 'Parabensss' is positive."
     },
     {
-        "query": "What issue did the customer face with the product they received despite being satisfied with the delivery time?",
+        "query": "What rating did the customer give in their review titled 'OTIMO EM TUDO'?",
         "collection": "customer_reviews",
-        "expected_ground_truth": "The customer received a product that was completely different from what they had ordered, even though they were pleased with the delivery time."
+        "expected_ground_truth": "The customer gave a rating of 10 in their review titled 'OTIMO EM TUDO'."
     },
     {
-        "query": "What issue did the customer face with the product purchased from Lannister stores?",
+        "query": "What feedback did the customer give regarding the delivery time of their order?",
         "collection": "customer_reviews",
-        "expected_ground_truth": "The customer received a product that was different from what was advertised by Lannister stores and it was also blocked and unusable."
-    },
-    {
-        "query": "What issue is the customer facing with their order placed in November?",
-        "collection": "customer_reviews",
-        "expected_ground_truth": "The customer is facing an issue where they have not yet received two products from an order placed in November."
+        "expected_ground_truth": "The customer mentioned that their order arrived before the estimated delivery time."
     },
     {
         "query": "What is the CEO's favorite color?",
