@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Appending Project root to System Path:
-sys.path.append(os.path.abspath(os.path.dirname(__file__), '../'))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from src.engines.rag_engine import chroma_client, embedding
 from src.utils.logger import hub_logger
 
@@ -58,3 +58,30 @@ def generate_case_from_chunk(chunk_text: str, collection_name: str) -> Synthetic
     )
 
     return response.choices[0].message.parsed
+
+def main(sample_size_per_collection: int = 25):
+    hub_logger.info('Initializing Test Set Generation...')
+    evaluation_dataset= []
+
+    # Fetching from Vector Collections:
+    try:
+        policies_collection= chroma_client.get_collection(name= 'olist_corporate_policies',
+                                                          embedding_function= embedding)
+
+        reviews_collection= chroma_client.get_collection(name= 'customer_reviews',
+                                                         embedding_function= embedding)
+    except Exception as e:
+        hub_logger.info(f'Failed to fetch collections: {e}')
+        return
+
+    # Fetching Documents from Both Collections:
+    policies= policies_collection.get(include= ['documents'])['documents']
+    reviews= reviews_collection.get(include= ['documents'])['documents']
+    print(policies)
+    print('\n')
+    print(reviews)
+    hub_logger.info(f'Documents fetched Successfully: {len(policies)} {len(reviews)}')
+
+if __name__ == '__main__':
+    sample_size_per_collection= 25
+    main(sample_size_per_collection)
