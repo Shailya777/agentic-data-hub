@@ -1,7 +1,15 @@
 import os
+import sys
 import json
 from dotenv import load_dotenv
 from openai import OpenAI
+import pandas as pd
+from datetime import datetime
+
+# Updating Sys Path to Add project Root Folder:
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from src.utils.logger import hub_logger
 from src.engines.rag_engine import (
     _expand_query,
     _retrieve_and_deduplicate,
@@ -16,26 +24,6 @@ load_dotenv()
 
 # Initializing OpenAI Client:
 openai= OpenAI(api_key= os.getenv("OPENAI_API_KEY"))
-
-# Evaluation Dataset:
-EVAL_QUESTIONS= [
-{
-        "query": "What are the most common complaints about delivery?",
-        "collection": "customer_reviews"
-    },
-    {
-        "query": "What is our corporate policy for handling returns after 30 days?",
-        "collection": "olist_corporate_policies"
-    },
-    {
-        "query": "Summarize the feedback from customers who bought watches.",
-        "collection": "customer_reviews"
-    },
-    {
-        "query": "What is the CEO's favorite color?", # Trick Question
-        "collection": "olist_corporate_policies"
-    }
-]
 
 # Evaluation Function:
 def evaluate_rag_triad(user_query: str, retrieved_context: str, generated_answer: str) -> dict:
@@ -65,85 +53,169 @@ def evaluate_rag_triad(user_query: str, retrieved_context: str, generated_answer
     }}
     
     User Query: {user_query}
-    
-    Retrieved Context:
-    {retrieved_context}
-    
-    Generated Answer: 
-    {generated_answer}
+    Retrieved Context: {retrieved_context}
+    Generated Answer: {generated_answer}
     """
 
-    response= openai.chat.completions.create(
-        model= 'gpt-4o',
-        response_format= {'type': 'json_object'},
-        messages= [
-            {'role': 'user', 'content': judge_prompt}
-        ],
-        temperature= 0.0,
-    )
+    try:
+        response= openai.chat.completions.create(
+            model= 'gpt-4o',
+            response_format= {'type': 'json_object'},
+            messages= [
+                {'role': 'user', 'content': judge_prompt}
+            ],
+            temperature= 0.0,
+        )
+        return json.loads(response.choices[0].message.content)
 
-    return json.loads(response.choices[0].message.content)
+    except Exception as e:
+       hub_logger.error(f"Judge Evaluation Failed: {e}")
+       return {"context_relevance": 1, "faithfulness": 1, "answer_relevance": 1, "reasoning": "Failed to judge."}
 
-if __name__ == "__main__":
-    print('Starting RAG Evaluation...\n')
-    metrics= {
-        'context': 0,
-        'faithfulness': 0,
-        'answer': 0
+def run_evaluation():
+    """
+    Uses Synthetic Test Dataset Generated to Measure RAG Performance.
+    :return: none
+    """
+
+    # Loading Synthetic Test Dataset:
+    test_path= os.path.abspath(os.path.join(os.path.dirname(__file__),'tests/rag_evaluation_set.json'))
+    if not os.path.exists(test_path):
+        print(f"Error: Run generate_evaluation_data.py first. Missing file: {test_path}")
+        return
+
+    with open(test_path, mode= 'r', encoding= 'utf-8') as f:
+        eval_questions= json.load(f)
+
+    print(f"Starting Comprehensive RAG Evaluation Run over {len(eval_questions)} test cases...\n")
+
+    detailed_results= []
+    summary_metrics= {
+        'context_relevance': 0, 'faithfulness': 0, 'answer_relevance': 0,
+        'fallback_correct': 0, 'total_fallback_cases': 0
     }
-    num_questions= len(EVAL_QUESTIONS)
 
-    for i, item in enumerate(EVAL_QUESTIONS, start= 1):
+    for i, item in enumerate(eval_questions, start= 1):
         query= item['query']
         collection_name= item['collection']
-        print(f"[{i}/{num_questions}] Testing: '{query}'")
+        expected_truth= item.get('expected_ground_truth', "")
+        is_fallback_case= (expected_truth == "OUT_OF_BOUNDS_FALLBACK")
 
-        # Executing RAG Pipeline Steps to Capture Context:
-        # 1. Initializing Chroma Collection:
-        collection= chroma_client.get_collection(name= collection_name,
-                                                 embedding_function= embedding)
-        # 2. Refining User Query:
-        queries= _expand_query(user_query= query)
+        print(f"[{i}/{len(eval_questions)}] Evaluating Engine Collection: {collection_name}")
+        print(f"  Query: '{query}'")
 
-        # 3. Fetching Chunks using Original and Refined Queries:
-        raw_chunks= _retrieve_and_deduplicate(search_queries= queries,
-                                              collection= collection,
-                                              chunks_per_query= 5)
+        try:
+            collection= chroma_client.get_collection(name= collection_name,
+                                                     embedding_function= embedding)
+            queries= _expand_query(user_query= query)
+            raw_chunks= _retrieve_and_deduplicate(search_queries= queries,
+                                                  collection= collection,
+                                                  chunks_per_query= 5)
+            best_chunks= _rerank_chunks(user_query= query,
+                                        raw_chunks= raw_chunks,
+                                        top_k= 5)
+            context= "\n".join([c['text'] for c in best_chunks]) if best_chunks else "NO CONTEXT FOUND"
 
-        # 4. Re-Ranking Chunks:
-        best_chunks= _rerank_chunks(user_query= query,
-                                    raw_chunks= raw_chunks,
-                                    top_k= 5)
+            if not best_chunks:
+                answer= 'No relevant information found'
+            else:
+                answer= _synthesize_answer(user_query= query,
+                                           best_chunks= best_chunks,
+                                           collection_name= collection_name)
 
-        # Formatting Context for LLM as a Judge:
-        context= "\n".join([c['text'] for c in best_chunks]) if best_chunks else "NO CONTEXT FOUND"
+            # Judging Current Answer:
+            eval_scores= evaluate_rag_triad(user_query= query,
+                                            retrieved_context= context,
+                                            generated_answer= answer)
 
-        # Generating Answer:
-        if not best_chunks:
-            answer= 'No relevant information found.'
-        else:
-            answer= _synthesize_answer(user_query= query,
-                                       best_chunks= best_chunks,
-                                       collection_name= collection_name)
+            # Guardrail Evaluation Tracking:
+            fallback_status= 'N/A'
+            if is_fallback_case:
+                summary_metrics['total_fallback_cases'] += 1
+                if 'No relevant information found' in answer or not best_chunks:
+                    summary_metrics['fallback_correct'] += 1
+                    fallback_status = 'PASSED'
+                else:
+                    fallback_status = 'FAILED'
 
-        # Grading The Generated Answer:
-        eval_scores= evaluate_rag_triad(user_query= query,
-                                        retrieved_context= context,
-                                        generated_answer= answer)
-        metrics['context']+= eval_scores['context_relevance']
-        metrics['faithfulness']+= eval_scores['faithfulness']
-        metrics['answer']+= eval_scores['answer_relevance']
+            # Metrics Aggregation:
+            summary_metrics['context_relevance'] += eval_scores['context_relevance']
+            summary_metrics['faithfulness'] += eval_scores['faithfulness']
+            summary_metrics['answer_relevance'] += eval_scores['answer_relevance']
 
-        print(f"  ↳ Context Relevance: {eval_scores['context_relevance']}/10")
-        print(f"  ↳ Faithfulness:      {eval_scores['faithfulness']}/10")
-        print(f"  ↳ Answer Relevance:  {eval_scores['answer_relevance']}/10")
-        print(f"  ↳ Judge Notes:       {eval_scores['reasoning']}\n")
+            # Appending Structured Logs for Evaluation Dashboard:
+            detailed_results.append({
+                "id": i,
+                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "query": query,
+                "collection": collection_name,
+                "expected_ground_truth": expected_truth,
+                "generated_answer": answer,
+                "context_relevance": eval_scores['context_relevance'],
+                "faithfulness": eval_scores['faithfulness'],
+                "answer_relevance": eval_scores['answer_relevance'],
+                "fallback_status": fallback_status,
+                "reasoning": eval_scores['reasoning']
+            })
 
-    # Final Evaluation Card:
-    print("========================================")
-    print("FINAL RAG SCORECARD")
-    print("========================================")
-    print(f"Avg Context Relevance: {metrics['context'] / num_questions:.1f} / 10")
-    print(f"Avg Faithfulness:      {metrics['faithfulness'] / num_questions:.1f} / 10")
-    print(f"Avg Answer Relevance:  {metrics['answer'] / num_questions:.1f} / 10")
-    print("========================================\n")
+            print(f" C-Rel: {eval_scores['context_relevance']}/10 | Faith: {eval_scores['faithfulness']}/10 | A-Rel: {eval_scores['answer_relevance']}/10 | OOB Fallback: {fallback_status}")
+
+        except Exception as e:
+            hub_logger.error(f"Error executing evaluation step on question {i}: {e}")
+            continue
+
+    # Computing Evaluation Summaries:
+    total_runs= len(eval_questions)
+    avg_c_rel= summary_metrics['context_relevance']/total_runs
+    avg_faith= summary_metrics['faithfulness']/total_runs
+    avg_a_rel= summary_metrics['answer_relevance']/total_runs
+
+    fb_total= summary_metrics['total_fallback_cases']
+    fb_acc= (summary_metrics['fallback_correct'] / fb_total * 100) if fb_total > 0 else 100.0
+
+    # Printing Evaluation Summary on Terminal:
+    print("\n" + "=" * 40)
+    print("📋 METRIC SCORECARD REPORT")
+    print("=" * 40)
+    print(f"Mean Context Relevance : {avg_c_rel:.2f} / 10")
+    print(f"Mean Faithfulness      : {avg_faith:.2f} / 10")
+    print(f"Mean Answer Relevance  : {avg_a_rel:.2f} / 10")
+    print(f"Security Guardrail Acc : {fb_acc:.1f}% ({summary_metrics['fallback_correct']}/{fb_total} OOB Traps Deflected)")
+    print("=" * 40 + "\n")
+
+    # Exporting Execution Logs:
+    log_dir= os.path.abspath(os.path.join(os.path.dirname(__file__),'data/processed'))
+    os.makedirs(log_dir, exist_ok=True)
+
+    # Saving Raw Detailed Logs:
+    log_file= os.path.join(log_dir, 'rag_eval_run_report.json')
+    with open(log_file, 'w', encoding= 'utf-8') as f:
+        json.dump(detailed_results, f, indent= 4, ensure_ascii= False)
+
+    # Saving Metrics CSV:
+    history_file= os.path.join(log_dir, 'rag_metrics.csv')
+    new_eval= pd.DataFrame([{
+        "execution_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "total_test_cases": total_runs,
+        "avg_context_relevance": avg_c_rel,
+        "avg_faithfulness": avg_faith,
+        "avg_answer_relevance": avg_a_rel,
+        "guardrail_accuracy": fb_acc
+    }])
+
+    # If Metrics CSV already exists:
+    if os.path.exists(history_file):
+        try:
+            existing_history= pd.read_csv(history_file)
+            updated_history= pd.concat([existing_history, new_eval], ignore_index= True)
+            updated_history.to_csv(history_file, index= False)
+        except Exception:
+            new_eval.to_csv(history_file, index= False)
+    else:
+        new_eval.to_csv(history_file, index= False)
+
+    hub_logger.info(f"Evaluation Run files successfully stored at {log_dir}")
+
+
+if __name__ == "__main__":
+    run_evaluation()
