@@ -6,6 +6,9 @@
 /models/
 /logs/
 
+# Evaluation Logs
+data/processed/rag_eval_run_report.json
+
 # Exception:
 !data/documents/
 !data/documents/Olist_Corporate_Policies.pdf
