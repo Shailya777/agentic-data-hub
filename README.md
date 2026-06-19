@@ -10,7 +10,43 @@ A multi-agent analytics orchestration system built over the Olist E-commerce dat
 An enterprise-grade, multi-agent data pipeline that dynamically routes natural language queries to specialized analytical engines. Built over the Brazilian Olist E-commerce dataset, this system orchestrates Text-to-SQL generation, Retrieval-Augmented Generation (RAG), and predictive machine learning models through a single, seamless conversational interface.
 
 ## 🏗️ System Architecture
-### Diagram Yet to be made
+```mermaid
+---
+config:
+  theme: dark
+---
+graph TD
+    User([End User]) -->|Natural Language Query| UI[Streamlit UI<br/>app.py]
+    UI -->|Query String| Router{Intent Router<br/>OpenAI + Pydantic}
+    Router -- Structured Data Intent --> SQL[SQL Engine]
+    Router -- Qualitative/Policy Intent --> RAG[RAG Engine]
+    Router -- Forecasting/Risk Intent --> Pred[Predictive Orchestrator]
+    Router -- Out-of-Bounds --> Fallback((Safe Fallback))
+    subgraph Structured Data Pipeline
+        SQL -->|Generates & Executes SQL| DB[(MySQL DB<br/>Least Privilege User)]
+        DB -->|Returns DataFrame| SQL
+    end
+    subgraph Unstructured Data Pipeline
+        RAG -->|Query Expansion| Chroma[(ChromaDB)]
+        Chroma --> Policies[(olist_corporate_policies)]
+        Chroma --> Reviews[(customer_reviews)]
+        
+        Policies --> RAG_Rank[Reranker & Synthesizer]
+        Reviews --> RAG_Rank
+        
+        RAG_Rank -.->|Continuous Evaluation| Eval[LLM-as-a-Judge<br/>OOB Trap Testing]
+    end
+    subgraph MLOps Pipeline
+        Pred -->|Operational/Simulation| Delay[Delivery Delay<br/>XGBoost]
+        Pred -->|Auto-Regressive Lags| Forecast[Demand Forecast<br/>XGBoost]
+        Pred -->|Pre-calculated| RFM[RFM Churn Profile]
+    end
+    SQL --> Output([Structured UI Response])
+    RAG_Rank --> Output
+    Delay --> Output
+    Forecast --> Output
+    RFM --> Output
+```
 
 ## 🧠 Core Architecture
 
