@@ -65,8 +65,8 @@ To prevent hallucination and ensure robust performance without relying on rigid,
 │   ├── apply_constraints.sql           # Applying MySQL Database Constraints on Data
 │   ├── db_setup.sql                    # DDL and permission configuration
 │   ├── extract_training_data.py        # Extracting Model Training Data from MySQL Database
-│   ├── generate_rag_eval_visual.py     # Generating RAG Evaluation Dashboard
-│   ├── generate_rag_eval_data.py       # Synthetic Data Generation to Evaluate RAG
+│   ├── generate_RAG_eval_visual.py     # Generating RAG Evaluation Dashboard
+│   ├── generate_RAG_eval_data.py       # Synthetic Data Generation to Evaluate RAG
 │   ├── ingest_olist_data.py            # Ingesting Olist CSV Data into MySQL DB
 │   ├── ingest_policies.py              # Ingesting Company Policy Data in Vector DB
 │   └── ingest_reviews.py               # Ingesting Customer Reviews from Olist Data in Vector DB
