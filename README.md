@@ -34,6 +34,8 @@ To prevent hallucination and ensure robust performance without relying on rigid,
 * **The RAG Triad:** Mathematically scores *Context Relevance*, *Faithfulness* (9.36/10), and *Answer Relevance*.
 * **Adversarial Guardrails:** Purposely injects "Out-Of-Bounds" (OOB) traps (e.g., "What is the CEO's favorite color?"). The system tracks `fallback_accuracy`, currently achieving **100% Security Guardrail Accuracy**, physically proving the system defaults to a safe fallback state rather than hallucinating against empty or malicious context.
 
+## 📊 RAG Evaluation Dashboard
+![RAG Evaluation Dashboard](data/processed/rag_eval_dashboard.png)
 ## 📂 Repository Structure
 
 ```text
@@ -70,4 +72,5 @@ To prevent hallucination and ensure robust performance without relying on rigid,
 │   ├── ingest_olist_data.py            # Ingesting Olist CSV Data into MySQL DB
 │   ├── ingest_policies.py              # Ingesting Company Policy Data in Vector DB
 │   └── ingest_reviews.py               # Ingesting Customer Reviews from Olist Data in Vector DB
+├── evaluate_rag.py                     # RAG Evaluation
 ```
