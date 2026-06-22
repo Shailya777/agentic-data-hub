@@ -3,7 +3,6 @@
 /.env
 /data/raw/
 /data/
-/models/
 /logs/
 
 # Evaluation Logs
