@@ -1,8 +1,12 @@
 /LinkedIn Post Drafts.docx
 /primary_architecture.txt
 /.env
-/data/raw/
-/data/
+/data/raw
+data/processed/churn_training_data.csv
+data/processed/customer_risk_profiles.csv
+data/processed/delivery_training_data.csv
+data/processed/forecasting_training_data.csv
+
 /logs/
 
 # Evaluation Logs
