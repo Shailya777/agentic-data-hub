@@ -9,20 +9,26 @@ load_dotenv()
 
 def get_order_features_from_db(order_id: str) -> dict:
     """
-    Queries MySQL to pull live features for a specific order_id.
+    Queries SQLite to pull live features for a specific order_id.
     :param order_id: Order ID to query.
     :return: Dictionary of live features for a specific order_id.
     """
 
-    # Database Engine:
-    engine_url= URL.create(
-        drivername= 'mysql+pymysql',
-        username= os.getenv('DB_USER'),
-        password= os.getenv('DB_PASSWORD'),
-        host= os.getenv('DB_HOST'),
-        database= os.getenv('DB_NAME')
-    )
-    db_engine = create_engine(engine_url)
+    # # Database Engine:
+    # engine_url= URL.create(
+    #     drivername= 'mysql+pymysql',
+    #     username= os.getenv('DB_USER'),
+    #     password= os.getenv('DB_PASSWORD'),
+    #     host= os.getenv('DB_HOST'),
+    #     database= os.getenv('DB_NAME')
+    # )
+    # db_engine = create_engine(engine_url)
+
+    # SQLite Database Engine:
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root= os.path.abspath(os.path.join(current_dir, '../../../'))
+    db_path= os.path.join(project_root, 'data/processed/ecommerce_db.sqlite')
+    db_engine= create_engine(f"sqlite:///{db_path}")
 
     # Same Query as Delivery Data Extraction, filtered for a single Order ID:
     query = f"""
@@ -36,14 +42,14 @@ def get_order_features_from_db(order_id: str) -> dict:
             GROUP BY oi.seller_id
         )
         SELECT 
-            MONTH(o.order_purchase_timestamp) AS purchase_month,
-            DAYOFWEEK(o.order_purchase_timestamp) AS purchase_day_of_week,
-            DATEDIFF(o.order_estimated_delivery_date, o.order_purchase_timestamp) AS estimated_days_to_deliver,
+            CAST(strftime('%m', o.order_purchase_timestamp) AS INTEGER) AS purchase_month,
+            CAST(strftime('%w', o.order_purchase_timestamp) AS INTEGER) + 1 AS purchase_day_of_week,
+            CAST(julianday(o.order_estimated_delivery_date) - julianday(o.order_purchase_timestamp) AS INTEGER) AS estimated_days_to_deliver,
             SUM(oi.freight_value) AS total_freight_value,
             SUM(p.product_weight_g) AS total_weight_g,
             SUM(p.product_length_cm * p.product_height_cm * p.product_width_cm) AS total_volume_cm3,
             CASE WHEN c.customer_state != s.seller_state THEN 1 ELSE 0 END AS is_interstate,
-            MAX(sd.delayed_orders / NULLIF(sd.total_orders, 0)) AS seller_historical_delay_rate
+            MAX(CAST(sd.delayed_orders AS REAL) / NULLIF(sd.total_orders, 0)) AS seller_historical_delay_rate
         FROM orders o
         JOIN customers c ON o.customer_id = c.customer_id
         JOIN order_items oi ON o.order_id = oi.order_id

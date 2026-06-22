@@ -10,15 +10,22 @@ import streamlit as st
 # Loading Environment Variables
 load_dotenv()
 
-# Initializing Database Engine:
-engine_url= URL.create(
-    drivername='mysql+pymysql',
-    username= os.getenv('DB_USER'),
-    password= os.getenv('DB_PASSWORD'),
-    host= os.getenv('DB_HOST'),
-    database= os.getenv('DB_NAME')
-)
-db_engine = create_engine(engine_url)
+# # Initializing MySQL Database Engine:
+# engine_url= URL.create(
+#     drivername='mysql+pymysql',
+#     username= os.getenv('DB_USER'),
+#     password= os.getenv('DB_PASSWORD'),
+#     host= os.getenv('DB_HOST'),
+#     database= os.getenv('DB_NAME')
+# )
+# db_engine = create_engine(engine_url)
+
+# Initializing SQLite Database Engine:
+current_dir= os.path.dirname(os.path.abspath(__file__))
+project_root= os.path.abspath(os.path.join(current_dir, '../../'))
+db_path= os.path.join(project_root, 'data/processed/ecommerce_db.sqlite')
+
+db_engine = create_engine(f"sqlite:///{db_path}")
 
 # Getting the MAX Order Date from DB to use as Current Date and caching it:
 @st.cache_data(ttl= 86400) # Caching for 24 hours
@@ -66,6 +73,7 @@ Business Rules & Definitions:
 3. TRANSLATIONS: Always use product_category_name_translation.product_category_name_english for product categories. The base products table is in Portuguese.
 4. DELIVERY TIME: Calculated as the difference in days between order_purchase_timestamp and order_delivered_customer_date.
 5. ACTIVE SELLERS: A seller is only considered "active" if they have an associated order in the order_items table linked to a 'delivered' order.
+6. CATEGORY FORMATTING: The database stores category names with underscores and omits the word "and" and "&". If a user asks for "health and beauty", you MUST query for 'health_beauty'. If they ask for "bed bath and table", query for 'bed_bath_table'. Replace all " ", "and", and "&" with "_".
 
 CRITICAL TIME-SERIES RULE: 
 The "current date" (today) for this database is exactly {current_db_date}.
@@ -94,22 +102,22 @@ class SQLResponse(BaseModel):
 
 def generate_sql_and_metadata(user_query: str, error_message: str = None, previous_sql: str = None) -> SQLResponse:
     """
-    Generates a MySQL query from User Query in Natural Language and Suggests charting instructions via Structured Outputs.
+    Generates a SQLite query from User Query in Natural Language and Suggests charting instructions via Structured Outputs.
     :param user_query: User Query in Natural Language.
     :param error_message: Error message from previous SQL query.
     :param previous_sql: Previous SQL query that gave error.
     :return: SQLResponse Object
     """
 
-    prompt= f"Write a highly optimized MYSQL Query to answer this request: {user_query}"
+    prompt= f"Write a highly optimized SQLite Query to answer this request: {user_query}"
 
     if error_message:
-        prompt += f"\n\nYour previous query:\n{previous_sql}\n\nFailed with this MySQL error:\n{error_message}\n\nPlease fix the SQL query and provide updated charting metadata."
+        prompt += f"\n\nYour previous query:\n{previous_sql}\n\nFailed with this SQLite error:\n{error_message}\n\nPlease fix the SQL query and provide updated charting metadata."
 
     response= openai.chat.completions.parse(
         model= 'gpt-4o',
         messages= [
-            {'role': 'system', 'content': f"You are a Senior Data Engineer. You strictly write highly optimized MySQL queries and determine the best way to visualize the results.\n\n{SCHEMA_CONTEXT}"},
+            {'role': 'system', 'content': f"You are a Senior Data Engineer. You strictly write highly optimized SQLite queries and determine the best way to visualize the results.\n\n{SCHEMA_CONTEXT}"},
             {'role': 'user', 'content': prompt}
         ],
         response_format= SQLResponse,
